@@ -1,0 +1,20 @@
+# Normalize text files to LF in repo, convert to native line endings on checkout.
+* text=auto
+
+# Keep common script files with LF so tooling works consistently.
+*.sh text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+
+# Treat generated/binary assets as binary.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.pdf binary
+*.ttf binary
+*.otf binary
+*.ico binary
+*.keystore binary
+*.jks binary
