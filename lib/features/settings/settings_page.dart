@@ -1,30 +1,42 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/theme_controller.dart';
+
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
-      body: ListView(
-        children: [
-          ListTile(
-            title: const Text('App Settings'),
-            onTap: () {},
+    final themeController = ThemeControllerScope.of(context);
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Card(
+          child: Column(
+            children: [
+              ListTile(
+                title: const Text('Theme'),
+                subtitle: Text(
+                  themeController.isDarkMode ? 'Dark mode' : 'Light mode',
+                ),
+              ),
+              SwitchListTile.adaptive(
+                title: const Text('Use dark theme'),
+                value: themeController.isDarkMode,
+                onChanged: (isDarkMode) {
+                  themeController.updateThemeMode(
+                    isDarkMode ? ThemeMode.dark : ThemeMode.light,
+                  );
+                },
+              ),
+            ],
           ),
-          ListTile(
-            title: const Text('Notifications'),
-            onTap: () {},
-          ),
-          ListTile(
-            title: const Text('About'),
-            onTap: () {},
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 12),
+        const ListTile(title: Text('Notifications')),
+        const ListTile(title: Text('About')),
+      ],
     );
   }
 }

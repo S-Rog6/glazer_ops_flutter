@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Primary colors
-  static const Color primary = Color(0xFF6200EE);
-  static const Color primaryDark = Color(0xFF3700B3);
-  static const Color primaryLight = Color(0xFFBB86FC);
+  // Brand palette: warm copper + harbor teal
+  static const Color primary = Color(0xFFB86428);
+  static const Color primaryDark = Color(0xFF7C4017);
+  static const Color primaryLight = Color(0xFFE19B61);
 
-  // Secondary colors
-  static const Color secondary = Color(0xFF03DAC6);
-  static const Color secondaryDark = Color(0xFF018786);
-  static const Color secondaryLight = Color(0xFFB2DFDB);
+  static const Color secondary = Color(0xFF2F8A83);
+  static const Color secondaryDark = Color(0xFF1F5D58);
+  static const Color secondaryLight = Color(0xFF7AC1BB);
 
-  // Neutral colors
-  static const Color background = Color(0xFF121212);
-  static const Color surface = Color(0xFF1E1E1E);
-  static const Color error = Color(0xFFB00020);
+  // Light theme surfaces
+  static const Color lightBackground = Color(0xFFF3ECE1);
+  static const Color lightSurface = Color(0xFFFFFBF6);
+  static const Color lightSurfaceRaised = Color(0xFFF7F0E5);
+  static const Color lightBorder = Color(0xFFD7C7B2);
 
-  // Text colors
-  static const Color textPrimary = Color(0xFFFFFFFF);
-  static const Color textSecondary = Color(0xFFB0B0B0);
-  static const Color textDisabled = Color(0xFF808080);
+  // Dark theme surfaces
+  static const Color darkBackground = Color(0xFF111922);
+  static const Color darkSurface = Color(0xFF172330);
+  static const Color darkSurfaceRaised = Color(0xFF213140);
+  static const Color darkBorder = Color(0xFF314455);
 
-  // Border colors
-  static const Color borderColor = Color(0xFF2C2C2C);
-  static const Color dividerColor = Color(0xFF404040);
+  // Feedback
+  static const Color error = Color(0xFFCF3333);
 }

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../routes/app_router.dart';
+
+const bool kBypassLogin = true;
+
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
 
@@ -17,7 +21,9 @@ class _SplashPageState extends State<SplashPage> {
   void _navigateToHome() {
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/login');
+        Navigator.of(context).pushReplacementNamed(
+          kBypassLogin ? AppRouter.dashboard : AppRouter.login,
+        );
       }
     });
   }

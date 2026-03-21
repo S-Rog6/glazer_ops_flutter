@@ -40,9 +40,9 @@ No fluff. Fast. Usable in the field.
 Phase 1: Setup + UI foundation
 
 * [x] Flutter project created
-* [ ] Navigation structure
-* [ ] Base layout (tabs/pages)
-* [ ] Theme system
+* [x] Navigation structure
+* [x] Base layout (tabs/pages)
+* [x] Theme system
 
 ---
 

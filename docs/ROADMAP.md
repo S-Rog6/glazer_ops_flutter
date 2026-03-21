@@ -6,7 +6,7 @@ Goal: App runs and navigation works
 
 * [x] Setup routing
 * [x] Bottom navigation / sidebar
-* [ ] Theme (dark + light)
+* [x] Theme (dark + light)
 * [x] Base layout components
 
 ---

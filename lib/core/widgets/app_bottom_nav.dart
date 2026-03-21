@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../routes/app_router.dart';
+
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
-  final Function(int) onTap;
+  final ValueChanged<int> onTap;
 
   const AppBottomNav({
     super.key,
@@ -12,31 +14,30 @@ class AppBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      backgroundColor:
+          theme.bottomNavigationBarTheme.backgroundColor ??
+          theme.colorScheme.surface,
+      selectedItemColor:
+          theme.bottomNavigationBarTheme.selectedItemColor ??
+          theme.colorScheme.primary,
+      unselectedItemColor:
+          theme.bottomNavigationBarTheme.unselectedItemColor ??
+          theme.colorScheme.onSurfaceVariant,
+      showUnselectedLabels: true,
       currentIndex: currentIndex,
       onTap: onTap,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.dashboard),
-          label: 'Dashboard',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.work),
-          label: 'Jobs',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.schedule),
-          label: 'Schedule',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.contacts),
-          label: 'Contacts',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.note),
-          label: 'Notes',
-        ),
-      ],
+      items: AppRouter.primaryDestinations
+          .map(
+            (destination) => BottomNavigationBarItem(
+              icon: Icon(destination.icon),
+              label: destination.label,
+            ),
+          )
+          .toList(),
     );
   }
 }

@@ -1,75 +1,60 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
+
+import '../../routes/app_router.dart';
 
 class AppDrawer extends StatelessWidget {
-  const AppDrawer({super.key});
+  final String currentRoute;
+  final ValueChanged<String> onDestinationSelected;
+
+  const AppDrawer({
+    super.key,
+    required this.currentRoute,
+    required this.onDestinationSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          const DrawerHeader(
+          DrawerHeader(
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  colorScheme.primary.withValues(alpha: 0.9),
+                  colorScheme.secondary.withValues(alpha: 0.78),
+                ],
+              ),
             ),
             child: Text(
               'GlazerOps',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: colorScheme.onPrimary,
                 fontSize: 24,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.3,
               ),
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.dashboard),
-            title: const Text('Dashboard'),
-            onTap: () {
-              Navigator.pop(context);
-              // Navigate to dashboard
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.work),
-            title: const Text('Jobs'),
-            onTap: () {
-              Navigator.pop(context);
-              // Navigate to jobs
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.schedule),
-            title: const Text('Schedule'),
-            onTap: () {
-              Navigator.pop(context);
-              // Navigate to schedule
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.contacts),
-            title: const Text('Contacts'),
-            onTap: () {
-              Navigator.pop(context);
-              // Navigate to contacts
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.note),
-            title: const Text('Notes'),
-            onTap: () {
-              Navigator.pop(context);
-              // Navigate to notes
-            },
+          ...AppRouter.primaryDestinations.map(
+            (destination) => ListTile(
+              selected: currentRoute == destination.route,
+              leading: Icon(destination.icon),
+              title: Text(destination.label),
+              onTap: () => onDestinationSelected(destination.route),
+            ),
           ),
           const Divider(),
           ListTile(
+            selected: currentRoute == AppRouter.settings,
             leading: const Icon(Icons.settings),
             title: const Text('Settings'),
-            onTap: () {
-              Navigator.pop(context);
-              // Navigate to settings
-            },
+            onTap: () => onDestinationSelected(AppRouter.settings),
           ),
         ],
       ),
