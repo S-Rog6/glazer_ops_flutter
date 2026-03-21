@@ -17,7 +17,7 @@ class _SplashPageState extends State<SplashPage> {
   void _navigateToHome() {
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
+        Navigator.of(context).pushReplacementNamed('/login');
       }
     });
   }

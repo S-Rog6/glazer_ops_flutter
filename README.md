@@ -28,12 +28,10 @@ No fluff. Fast. Usable in the field.
 
 ## Project Structure
 
-```
 /glazerops
   /app              -> Flutter app
   /docs             -> Planning + architecture
   /backend          -> (future backend code)
-```
 
 ---
 
