@@ -25,6 +25,10 @@ class AppShell extends StatelessWidget {
     final currentIndex = AppRouter.primaryIndexForRoute(currentRoute);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isMobile = screenWidth < 700;
+    final showBottomNav = isMobile && currentIndex >= 0;
+    final showDrawer = !isMobile;
     final backgroundWash = Color.alphaBlend(
       colorScheme.secondary.withValues(
         alpha: theme.brightness == Brightness.dark ? 0.08 : 0.05,
@@ -50,7 +54,7 @@ class AppShell extends StatelessWidget {
         ),
         child: body,
       ),
-      bottomNavigationBar: currentIndex >= 0
+      bottomNavigationBar: showBottomNav
           ? AppBottomNav(
               currentIndex: currentIndex,
               onTap: (index) {
@@ -61,10 +65,12 @@ class AppShell extends StatelessWidget {
               },
             )
           : null,
-      drawer: AppDrawer(
-        currentRoute: currentRoute,
-        onDestinationSelected: (routeName) => _navigateTo(context, routeName),
-      ),
+      drawer: showDrawer
+          ? AppDrawer(
+              currentRoute: currentRoute,
+              onDestinationSelected: (routeName) => _navigateTo(context, routeName),
+            )
+          : null,
     );
   }
 }

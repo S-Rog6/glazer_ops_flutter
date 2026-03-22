@@ -59,53 +59,36 @@ Database (Postgres)
 
 ---
 
-## Data Model (Basic)
+## Database Direction
 
-### Jobs
+### Source-of-Truth Tables
 
-* id
-* job_name
-* po_number
-* site_id
+* `profiles` (`auth.users` companion)
+* `sites`
+* `jobs`
+* `site_contacts`
+* `job_contacts`
+* `job_assignments`
+* `notes`
+* `user_pinned_jobs`
 
-### Sites
+### Read-Focused Views
 
-* id
-* name
-* address
+* `job_list_view`
+* `job_details_view`
+* `job_all_contacts_view`
+* `job_user_calendar_view`
 
-### Contacts
+### Important Modeling Calls
 
-* id
-* job_id
-* name
-* phone
+* Backend views should provide ready-to-display data.
+* UI should not perform heavy joins.
+* There is no first-pass `schedules` table.
+  Overall date range lives on `jobs`; per-user, per-day staffing lives in `job_assignments`.
+* Site contacts stay normalized at the site level.
+  The UI gets the combined list through `job_all_contacts_view`.
 
-### Schedules
-
-* id
-* job_id
-* start_date
-* end_date
-
-### Notes
-
-* id
-* job_id
-* content
-* created_at
-
----
-
-## Key Decision (Important)
-
-We will use:
-
-* **Views on backend** (combined data)
-* NOT heavy joins in UI
-
-UI should receive:
-→ “ready-to-display” data
+Full table and view definitions live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
 
 ---
 

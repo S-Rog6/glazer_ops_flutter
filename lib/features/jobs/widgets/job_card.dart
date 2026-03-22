@@ -184,9 +184,9 @@ class JobCard extends StatelessWidget {
       case 'scheduled':
         return colorScheme.secondary;
       case 'completed':
-        return colorScheme.onSurfaceVariant;
+        return const Color(0xFF6B7A8A);
       case 'in progress':
-        return const Color(0xFFD19A22);
+        return const Color(0xFF7090A8);
       default:
         return colorScheme.primary;
     }

@@ -27,9 +27,9 @@ Goal: You can view and open jobs
 Goal: Full job info displayed
 
 * [ ] Contacts section
-* [ ] Schedule section
+* [ ] Schedule / crew section
 * [ ] Notes section
-* [ ] Attachments placeholder
+* [ ] Attachments placeholder (backend deferred)
 
 ---
 
@@ -38,8 +38,9 @@ Goal: Full job info displayed
 Goal: Real data
 
 * [ ] Setup backend (Supabase likely)
-* [ ] Create tables
-* [ ] Create views (important)
+* [ ] Create core tables from `DATABASE_SCHEMA.md`
+* [ ] Create read views: `job_list_view`, `job_details_view`, `job_all_contacts_view`, `job_user_calendar_view`
+* [ ] Add auth mapping and RLS policies
 * [ ] Connect Flutter app
 
 ---

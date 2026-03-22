@@ -30,7 +30,7 @@ No fluff. Fast. Usable in the field.
 
 /glazerops
   /app              -> Flutter app
-  /docs             -> Planning + architecture
+  /docs             -> Planning + architecture + database schema
   /backend          -> (future backend code)
 
 ---
@@ -87,6 +87,7 @@ Phase 1: Setup + UI foundation
 This is being built iteratively. Expect changes.
 
 Keep everything modular so we don’t regret decisions later.
+Backend schema planning now lives in `docs/DATABASE_SCHEMA.md`.
 
 ---
 

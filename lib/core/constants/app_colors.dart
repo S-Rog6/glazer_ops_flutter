@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Brand palette: warm copper + harbor teal
-  static const Color primary = Color(0xFFB86428);
-  static const Color primaryDark = Color(0xFF7C4017);
-  static const Color primaryLight = Color(0xFFE19B61);
+  // Brand palette: steel blue + charcoal gray
+  static const Color primary = Color(0xFF4A7C9E);
+  static const Color primaryDark = Color(0xFF2C5178);
+  static const Color primaryLight = Color(0xFF6B9FBF);
 
-  static const Color secondary = Color(0xFF2F8A83);
-  static const Color secondaryDark = Color(0xFF1F5D58);
-  static const Color secondaryLight = Color(0xFF7AC1BB);
+  static const Color secondary = Color(0xFF5A6B7A);
+  static const Color secondaryDark = Color(0xFF3D4A58);
+  static const Color secondaryLight = Color(0xFF8B9FAE);
 
   // Light theme surfaces
   static const Color lightBackground = Color(0xFFF3ECE1);
