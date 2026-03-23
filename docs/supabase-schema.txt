@@ -1,0 +1,41 @@
+Supabase directory trigger plan
+===============================
+
+Why this exists
+----------------
+Supabase Storage does not have true folders. A path like
+`jobs/<job_id>/photos/pic.jpg` works because `jobs/<job_id>/photos/` is a key
+prefix, not because a real directory was created ahead of time.
+
+Because of that, the safest database-side solution is:
+1. Store the directory blueprint in Postgres.
+2. Create the blueprint automatically with triggers.
+3. Let the app/server upload files into those paths.
+4. Optionally upload a zero-byte `.keep` file using `placeholder_object` if you
+   want empty folders to appear in admin tooling.
+
+Default user paths
+------------------
+Bucket: `user-files`
+- `users/<user_id>/profile/`
+- `users/<user_id>/documents/`
+- `users/<user_id>/photos/`
+
+Default job paths
+-----------------
+Bucket: `job-files`
+- `jobs/<job_id>/contracts/`
+- `jobs/<job_id>/photos/`
+- `jobs/<job_id>/shop-drawings/`
+- `jobs/<job_id>/daily-reports/`
+
+Trigger sources
+---------------
+- User directories are enqueued from `auth.users` inserts.
+- Job directories are enqueued from `public.jobs` inserts.
+
+Notes
+-----
+- If your app creates users in `public.profiles`, move the user trigger there.
+- If you want one bucket instead of two, replace both bucket IDs with the same
+  bucket name.

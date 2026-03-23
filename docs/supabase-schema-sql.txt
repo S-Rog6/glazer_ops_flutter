@@ -1,0 +1,101 @@
+-- Supabase directory bootstrap schema
+--
+-- IMPORTANT:
+-- Supabase Storage folders are virtual path prefixes, not real directories.
+-- The recommended pattern is to keep the expected folder structure in your own
+-- table and let your app/server upload files to those prefixes as needed.
+--
+-- This migration adds:
+--   1. a public.storage_directories table for the folder map
+--   2. a trigger on auth.users to enqueue default user folders
+--   3. a trigger on public.jobs to enqueue default job folders
+
+create extension if not exists pgcrypto;
+
+create table if not exists public.storage_directories (
+  id uuid primary key default gen_random_uuid(),
+  entity_type text not null check (entity_type in ('user', 'job')),
+  entity_id uuid not null,
+  bucket_id text not null,
+  path text not null,
+  placeholder_object text generated always as (
+    case
+      when right(path, 1) = '/' then path || '.keep'
+      else path || '/.keep'
+    end
+  ) stored,
+  created_at timestamptz not null default timezone('utc', now()),
+  unique (bucket_id, path),
+  unique (entity_type, entity_id, path)
+);
+
+create index if not exists storage_directories_entity_idx
+  on public.storage_directories (entity_type, entity_id);
+
+comment on table public.storage_directories is
+  'Application-owned folder map for Supabase Storage prefixes.';
+
+comment on column public.storage_directories.placeholder_object is
+  'Convenience value for clients/services that want to upload a zero-byte .keep object.';
+
+create or replace function public.enqueue_user_storage_directories()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.storage_directories (entity_type, entity_id, bucket_id, path)
+  values
+    ('user', new.id, 'user-files', format('users/%s/profile/', new.id)),
+    ('user', new.id, 'user-files', format('users/%s/documents/', new.id)),
+    ('user', new.id, 'user-files', format('users/%s/photos/', new.id))
+  on conflict (entity_type, entity_id, path) do nothing;
+
+  return new;
+end;
+$$;
+
+create or replace function public.enqueue_job_storage_directories()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.storage_directories (entity_type, entity_id, bucket_id, path)
+  values
+    ('job', new.id, 'job-files', format('jobs/%s/contracts/', new.id)),
+    ('job', new.id, 'job-files', format('jobs/%s/photos/', new.id)),
+    ('job', new.id, 'job-files', format('jobs/%s/shop-drawings/', new.id)),
+    ('job', new.id, 'job-files', format('jobs/%s/daily-reports/', new.id))
+  on conflict (entity_type, entity_id, path) do nothing;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_enqueue_user_storage_directories on auth.users;
+create trigger trg_enqueue_user_storage_directories
+after insert on auth.users
+for each row
+execute function public.enqueue_user_storage_directories();
+
+drop trigger if exists trg_enqueue_job_storage_directories on public.jobs;
+create trigger trg_enqueue_job_storage_directories
+after insert on public.jobs
+for each row
+execute function public.enqueue_job_storage_directories();
+
+create or replace view public.storage_directory_placeholders as
+select
+  entity_type,
+  entity_id,
+  bucket_id,
+  path,
+  placeholder_object,
+  created_at
+from public.storage_directories;
+
+-- If your app creates profile rows instead of relying on auth.users directly,
+-- move the user trigger to public.profiles and swap NEW.id for NEW.user_id.
