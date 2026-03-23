@@ -29,7 +29,7 @@ class JobDetailsData {
     required this.siteId,
     required this.siteName,
     required this.addressLine1,
-    required this.addressLine2,
+    this.addressLine2,
     required this.city,
     required this.state,
     required this.postalCode,
