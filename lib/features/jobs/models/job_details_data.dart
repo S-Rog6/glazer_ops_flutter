@@ -70,7 +70,7 @@ class JobCrewAssignmentData {
     required this.workDate,
     required this.status,
     required this.role,
-    required this.notes,
+    this.notes,
   });
 }
 
