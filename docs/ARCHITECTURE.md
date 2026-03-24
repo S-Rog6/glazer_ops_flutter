@@ -66,6 +66,7 @@ Database (Postgres)
 * `profiles` (`auth.users` companion)
 * `sites`
 * `jobs`
+* `schedule`
 * `site_contacts`
 * `job_contacts`
 * `job_assignments`
@@ -83,8 +84,8 @@ Database (Postgres)
 
 * Backend views should provide ready-to-display data.
 * UI should not perform heavy joins.
-* There is no first-pass `schedules` table.
-  Overall date range lives on `jobs`; per-user, per-day staffing lives in `job_assignments`.
+* The `schedule` table holds one row per scheduled date or date range for a job (one job → many schedule rows).
+  Per-user, per-day staffing lives in `job_assignments`.
 * Site contacts stay normalized at the site level.
   The UI gets the combined list through `job_all_contacts_view`.
 
