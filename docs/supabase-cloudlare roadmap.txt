@@ -1,0 +1,223 @@
+GlazerOps Setup Guide (Flutter + Supabase + Cloudflare Pages)
+
+---
+
+PHASE 1 — SUPABASE (BACKEND FIRST)
+
+1. Create Project
+
+- Go to Supabase
+- Create new project
+- Save:
+  - Project URL
+  - Anon Public Key
+
+2. Setup Auth
+
+- Enable Email auth (password or magic link)
+- Optional: Google later
+- Turn OFF public signup if you want invite-only
+
+3. Create Minimal Tables
+
+jobs
+
+- id (uuid)
+- job_name
+- po_number
+- site_name
+- created_at
+
+job_notes
+
+- id
+- job_id
+- note
+- created_at
+
+job_photos
+
+- id
+- job_id
+- file_url
+
+4. Enable Row Level Security (RLS)
+
+- Turn ON RLS for each table
+
+- Add basic policy:
+  
+  auth.uid() IS NOT NULL
+
+(Simple for now, lock down later)
+
+5. Setup Storage
+
+- Create bucket: job-files
+- Set to public (for now)
+
+---
+
+PHASE 2 — FLUTTER SETUP
+
+1. Add Dependencies
+
+pubspec.yaml:
+
+dependencies:
+supabase_flutter: latest
+go_router: latest
+
+2. Initialize Supabase
+
+main.dart:
+
+await Supabase.initialize(
+url: 'YOUR_SUPABASE_URL',
+anonKey: 'YOUR_ANON_KEY',
+);
+
+3. Test Connection
+
+final supabase = Supabase.instance.client;
+
+final data = await supabase.from('jobs').select();
+print(data);
+
+(Do NOT continue if this fails)
+
+4. Basic Auth
+
+await supabase.auth.signInWithPassword(
+email: email,
+password: password,
+);
+
+5. Route Protection (later)
+
+- Redirect to login if not authenticated
+
+---
+
+PHASE 3 — CLOUDFLARE PAGES (WEB HOSTING)
+
+1. Build Flutter Web
+
+flutter build web
+
+Output folder:
+build/web/
+
+2. Create Cloudflare Pages Project
+
+- Connect GitHub repo
+
+3. Configure Build
+
+Build command:
+flutter build web
+
+Output directory:
+build/web
+
+4. Fix SPA Routing
+
+Create:
+/web/_redirects
+
+Add:
+/*    /index.html   200
+
+(Prevents 404 on refresh)
+
+5. Deploy
+
+- Push to GitHub
+- Cloudflare builds automatically
+
+---
+
+PHASE 4 — CONNECT EVERYTHING
+
+1. Auth Flow
+
+- Not logged in → Login page
+- Logged in → Dashboard
+
+2. Load Jobs
+
+final jobs = await supabase
+.from('jobs')
+.select()
+.order('created_at');
+
+3. Navigate to Job
+
+context.go('/jobs/123');
+
+4. Upload File
+
+await supabase.storage
+.from('job-files')
+.upload('job123/photo1.png', file);
+
+5. Get Public URL
+
+final url = supabase.storage
+.from('job-files')
+.getPublicUrl('job123/photo1.png');
+
+Store URL in job_photos table
+
+---
+
+PHASE 5 — MOBILE (OPTIONAL)
+
+Build Android:
+
+flutter build apk
+
+(No hosting required)
+
+---
+
+MINIMUM WORKING APP CHECKLIST
+
+- Login works
+- Jobs load from database
+- Can open job details
+- Can add notes
+- Can upload photos
+- Works on phone + web
+
+---
+
+WHAT NOT TO DO YET
+
+- Don’t overbuild database
+- Don’t add complex permissions
+- Don’t optimize early
+- Don’t add caching
+- Don’t build offline mode
+- Don’t over-design UI
+- Don’t introduce complex state management
+
+---
+
+CORE RULE
+
+Get it working first.
+Make it better later.
+
+---
+
+NEXT STEPS (RECOMMENDED)
+
+- Build real Job model
+- Improve job list UI (cards)
+- Build job details tabs with real data
+- Add contacts + schedule later
+
+---
+
+END
