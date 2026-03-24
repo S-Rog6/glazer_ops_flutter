@@ -5,7 +5,7 @@
 * Tables hold source-of-truth data.
 * Views shape data for the Flutter UI.
 * Site contacts stay normalized in `site_contacts`; they are not copied into `job_contacts`.
-* Daily crew tracking lives in `job_assignments`; there is no separate first-pass `schedules` table.
+* Daily crew tracking lives in `job_assignments`; scheduled work dates live in the `schedule` table as one row per date or date range.
 * User pins are stored in `user_pinned_jobs`; they are not derived in the UI.
 * `auth.users` is the correct bootstrap hook for app-owned user defaults such as `profiles`, future `user_settings`, and storage directory blueprints.
 
@@ -22,6 +22,7 @@
 
 * `sites`
 * `jobs`
+* `schedule`
 * `site_contacts`
 * `job_contacts`
 * `job_assignments`
@@ -124,6 +125,16 @@ create table if not exists public.jobs (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
+create table if not exists public.schedule (
+  id uuid primary key default gen_random_uuid(),
+  job_id uuid not null references public.jobs(id) on delete cascade,
+  start_date date not null,
+  end_date date,
+  notes text,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
 create table if not exists public.site_contacts (
   id uuid primary key default gen_random_uuid(),
   site_id uuid not null references public.sites(id) on delete cascade,
@@ -179,6 +190,12 @@ create table if not exists public.user_pinned_jobs (
   primary key (user_id, job_id)
 );
 
+create index if not exists schedule_job_id_idx
+  on public.schedule (job_id);
+
+create index if not exists schedule_start_date_idx
+  on public.schedule (start_date);
+
 create index if not exists jobs_site_id_idx
   on public.jobs (site_id);
 
@@ -219,6 +236,11 @@ for each row execute function public.set_updated_at();
 drop trigger if exists set_sites_updated_at on public.sites;
 create trigger set_sites_updated_at
 before update on public.sites
+for each row execute function public.set_updated_at();
+
+drop trigger if exists set_schedule_updated_at on public.schedule;
+create trigger set_schedule_updated_at
+before update on public.schedule
 for each row execute function public.set_updated_at();
 
 drop trigger if exists set_jobs_updated_at on public.jobs;
@@ -349,13 +371,20 @@ join public.profiles p on p.id = ja.user_id;
 
 * A site can host multiple jobs over time.
 * Job records keep `job_name`, `po_number`, `status`, and date range fields that already match the current Flutter naming direction.
-* The overall schedule window belongs on the job record, not in a separate one-row-per-job schedule table.
+* The overall schedule window is managed through the `schedule` table, not stored as a single date range on the job record.
 
 ### `site_contacts` + `job_contacts`
 
 * `site_contacts` holds shared site-level contacts.
 * `job_contacts` holds job-specific additions or overrides.
 * `job_all_contacts_view` is the read-side union for the UI, with a `source` field so Flutter can label inherited vs job-specific contacts if needed.
+
+### `schedule`
+
+* One row means one scheduled date or date range for a job.
+* A job can have many `schedule` rows, covering discrete work days or multi-day periods.
+* `start_date` is required; `end_date` is optional and used when the scheduled block spans more than one day.
+* This is the source of truth for when a job is expected to be worked, independently of which crew members are assigned.
 
 ### `job_assignments`
 
@@ -383,8 +412,6 @@ join public.profiles p on p.id = ja.user_id;
 
 ## Deliberate Exclusions
 
-* No `schedules` table in the first backend pass.
-  Use `jobs.start_date` and `jobs.end_date` for the overall job window, and use `job_assignments` for day-by-day staffing.
 * No automatic copying from `site_contacts` into `job_contacts`.
   If the UI needs a combined list, query `job_all_contacts_view`.
 * No `job_attachments` table yet.
