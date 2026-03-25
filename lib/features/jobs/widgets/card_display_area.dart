@@ -48,18 +48,8 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
         final compactPhone = constraints.maxWidth < 380;
         final searchFieldWidth = compactPhone ? 250.0 : (isMobile ? 320.0 : 340.0);
         final statusFieldWidth = compactPhone ? 150.0 : 170.0;
-        final panelStart = Color.alphaBlend(
-          colorScheme.primary.withValues(alpha: theme.brightness == Brightness.dark ? 0.16 : 0.09),
-          colorScheme.surface,
-        );
-        final panelEnd = Color.alphaBlend(
-          colorScheme.secondary.withValues(alpha: theme.brightness == Brightness.dark ? 0.12 : 0.06),
-          colorScheme.surface,
-        );
-        final filterSurface = Color.alphaBlend(
-          colorScheme.primary.withValues(alpha: theme.brightness == Brightness.dark ? 0.14 : 0.08),
-          colorScheme.surfaceContainerHighest,
-        );
+        final panelSurface = colorScheme.surface;
+        final filterSurface = colorScheme.surfaceContainerHighest;
 
         return SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(
@@ -79,16 +69,12 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
                   border: Border.all(
                     color: colorScheme.outline.withValues(alpha: 0.8),
                   ),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [panelStart, colorScheme.surface, panelEnd],
-                  ),
+                  color: panelSurface,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: theme.brightness == Brightness.dark ? 0.2 : 0.08),
-                      blurRadius: 22,
-                      offset: const Offset(0, 10),
+                      color: Colors.black.withValues(alpha: theme.brightness == Brightness.dark ? 0.16 : 0.05),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
                     ),
                   ],
                 ),

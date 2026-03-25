@@ -34,9 +34,15 @@ class AppTheme {
     );
     final colorScheme = baseScheme.copyWith(
       primary: isDark ? AppColors.primaryLight : AppColors.primary,
-      secondary: isDark ? AppColors.secondaryLight : AppColors.secondary,
+      secondary: isDark ? AppColors.secondary : AppColors.secondaryDark,
+      tertiary: isDark ? AppColors.secondaryLight : AppColors.secondary,
       surface: surfaceColor,
       surfaceContainerHighest: raisedSurfaceColor,
+      primaryContainer: isDark ? const Color(0xFF5A0A11) : const Color(0xFFF8D9DC),
+      secondaryContainer: isDark ? const Color(0xFF222933) : const Color(0xFFE5E9EF),
+      tertiaryContainer: isDark ? const Color(0xFF28303B) : const Color(0xFFE2E6EC),
+      onSurface: isDark ? const Color(0xFFE7EBF2) : const Color(0xFF181C22),
+      onSurfaceVariant: isDark ? const Color(0xFFB9C0CB) : const Color(0xFF58606D),
       outline: borderColor,
       error: AppColors.error,
     );

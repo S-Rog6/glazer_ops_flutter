@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/constants/app_colors.dart';
 import '../../routes/app_router.dart';
 
 const bool kBypassLogin = true;
@@ -30,23 +31,37 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'GlazerOps',
-              style: TextStyle(
-                fontSize: 48.0,
-                fontWeight: FontWeight.bold,
+      body: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppColors.darkBackground, AppColors.darkSurface],
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/images/Logo.png',
+                width: 320,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  Icons.business,
+                  size: 96,
+                  color: theme.colorScheme.onSurface,
+                ),
               ),
-            ),
-            const SizedBox(height: 24.0),
-            CircularProgressIndicator(
-              color: Theme.of(context).primaryColor,
-            ),
-          ],
+              const SizedBox(height: 28.0),
+              CircularProgressIndicator(
+                color: AppColors.primary,
+              ),
+            ],
+          ),
         ),
       ),
     );

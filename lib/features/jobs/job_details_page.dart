@@ -15,20 +15,6 @@ class JobDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final job = mockJobDetails[jobId] ?? _fallbackJob(jobId);
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final topWash = Color.alphaBlend(
-      colorScheme.primary.withValues(
-        alpha: theme.brightness == Brightness.dark ? 0.14 : 0.08,
-      ),
-      theme.scaffoldBackgroundColor,
-    );
-    final bottomWash = Color.alphaBlend(
-      colorScheme.secondary.withValues(
-        alpha: theme.brightness == Brightness.dark ? 0.10 : 0.05,
-      ),
-      theme.scaffoldBackgroundColor,
-    );
 
     return DefaultTabController(
       length: 5,
@@ -47,53 +33,44 @@ class JobDetailsPage extends StatelessWidget {
             ],
           ),
         ),
-        body: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [topWash, theme.scaffoldBackgroundColor, bottomWash],
-            ),
-          ),
-          child: SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isMobile = constraints.maxWidth < 860;
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isMobile = constraints.maxWidth < 860;
 
-                return SingleChildScrollView(
-                  padding: EdgeInsets.fromLTRB(
-                    isMobile ? AppSizes.paddingSmall : AppSizes.paddingLarge,
-                    AppSizes.paddingSmall,
-                    isMobile ? AppSizes.paddingSmall : AppSizes.paddingLarge,
-                    AppSizes.paddingLarge,
-                  ),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 1200),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _JobHeaderCard(job: job),
-                          const SizedBox(height: AppSizes.paddingLarge),
-                          SizedBox(
-                            height: 760,
-                            child: TabBarView(
-                              children: [
-                                _OverviewTab(job: job),
-                                _ContactsTab(job: job),
-                                _CrewTab(job: job),
-                                _NotesTab(job: job),
-                                _AttachmentsTab(job: job),
-                              ],
-                            ),
+              return SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(
+                  isMobile ? AppSizes.paddingSmall : AppSizes.paddingLarge,
+                  AppSizes.paddingSmall,
+                  isMobile ? AppSizes.paddingSmall : AppSizes.paddingLarge,
+                  AppSizes.paddingLarge,
+                ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1200),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _JobHeaderCard(job: job),
+                        const SizedBox(height: AppSizes.paddingLarge),
+                        SizedBox(
+                          height: 760,
+                          child: TabBarView(
+                            children: [
+                              _OverviewTab(job: job),
+                              _ContactsTab(job: job),
+                              _CrewTab(job: job),
+                              _NotesTab(job: job),
+                              const _AttachmentsTab(),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -128,29 +105,11 @@ class _JobHeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     final statusColor = _statusColor(colorScheme, job.status);
-    final isDark = theme.brightness == Brightness.dark;
-    final headerStart = Color.alphaBlend(
-      statusColor.withValues(alpha: isDark ? 0.16 : 0.08),
-      colorScheme.surface,
-    );
-    final headerEnd = Color.alphaBlend(
-      colorScheme.secondary.withValues(alpha: isDark ? 0.14 : 0.07),
-      colorScheme.surface,
-    );
 
     return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [headerStart, colorScheme.surface, headerEnd],
-          ),
-        ),
+      child: Padding(
         padding: const EdgeInsets.all(AppSizes.paddingLarge),
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -194,11 +153,6 @@ class _JobSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
-    final metaBackground = Color.alphaBlend(
-      colorScheme.secondary.withValues(alpha: isDark ? 0.14 : 0.08),
-      colorScheme.surfaceContainerHighest,
-    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,12 +174,12 @@ class _JobSummary extends StatelessWidget {
             _MetaChip(
               icon: Icons.sell_outlined,
               label: job.poNumber,
-              backgroundColor: metaBackground,
+              backgroundColor: colorScheme.surfaceContainerHighest,
             ),
             _MetaChip(
               icon: Icons.location_on_outlined,
               label: job.siteName,
-              backgroundColor: metaBackground,
+              backgroundColor: colorScheme.surfaceContainerHighest,
             ),
             _StatusChip(label: job.status, color: statusColor),
           ],
@@ -272,14 +226,10 @@ class _QuickInfoRail extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final panelColor = Color.alphaBlend(
-      statusColor.withValues(alpha: theme.brightness == Brightness.dark ? 0.10 : 0.05),
-      colorScheme.surfaceContainerHighest,
-    );
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: panelColor,
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
         border: Border.all(color: colorScheme.outline),
       ),
@@ -472,41 +422,14 @@ class _NotesTab extends StatelessWidget {
 }
 
 class _AttachmentsTab extends StatelessWidget {
-  final JobDetailsData job;
-
-  const _AttachmentsTab({required this.job});
+  const _AttachmentsTab();
 
   @override
   Widget build(BuildContext context) {
-    return _SectionCard(
-      title: 'Attachments placeholder',
+    return const _EmptyState(
       icon: Icons.attach_file_outlined,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Attachments are intentionally a placeholder in this first pass. The backend schema docs defer a real attachments table until the upload flow is defined.',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5),
-          ),
-          const SizedBox(height: AppSizes.paddingLarge),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: const [
-              _PlaceholderTile(
-                icon: Icons.photo_library_outlined,
-                title: 'Photos',
-                message: 'Future upload area for job progress photos.',
-              ),
-              _PlaceholderTile(
-                icon: Icons.picture_as_pdf_outlined,
-                title: 'Documents',
-                message: 'Future upload area for permits, drawings, and PDFs.',
-              ),
-            ],
-          ),
-        ],
-      ),
+      title: 'Attachments',
+      message: 'Photo and document uploads will be available once the upload flow is set up.',
     );
   }
 }
@@ -546,7 +469,7 @@ class _SectionCard extends StatelessWidget {
                     style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
                   ),
                 ),
-                if (trailing != null) trailing!,
+                ?trailing,
               ],
             ),
             const SizedBox(height: AppSizes.paddingLarge),
@@ -782,43 +705,6 @@ class _SmallBadge extends StatelessWidget {
   }
 }
 
-class _PlaceholderTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String message;
-
-  const _PlaceholderTile({
-    required this.icon,
-    required this.title,
-    required this.message,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      width: 260,
-      padding: const EdgeInsets.all(AppSizes.paddingMedium),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
-        border: Border.all(color: colorScheme.outline),
-        color: colorScheme.surfaceContainerHighest,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: colorScheme.primary),
-          const SizedBox(height: AppSizes.paddingSmall),
-          Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 4),
-          Text(message, style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.4)),
-        ],
-      ),
-    );
-  }
-}
-
 Color _statusColor(ColorScheme colorScheme, String status) {
   switch (status.toLowerCase()) {
     case 'open':
@@ -844,22 +730,8 @@ String _formatAddress(JobDetailsData job) {
 }
 
 String _formatDate(DateTime value) {
-  const monthNames = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-
-  return '${monthNames[value.month - 1]} ${value.day}, ${value.year}';
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return '${months[value.month - 1]} ${value.day}, ${value.year}';
 }
 
 String _formatDateTime(DateTime value) {

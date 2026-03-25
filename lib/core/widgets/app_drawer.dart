@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../constants/app_colors.dart';
 import '../../routes/app_router.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -26,19 +27,29 @@ class AppDrawer extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  colorScheme.primary.withValues(alpha: 0.9),
-                  colorScheme.secondary.withValues(alpha: 0.78),
+                  AppColors.secondaryDark,
+                  Color.alphaBlend(
+                    AppColors.primary.withValues(alpha: 0.18),
+                    AppColors.secondaryDark,
+                  ),
                 ],
               ),
             ),
-            child: Text(
-              'GlazerOps',
-              style: TextStyle(
-                color: colorScheme.onPrimary,
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.3,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/Logo.png',
+                  height: 60,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => Icon(
+                    Icons.business,
+                    size: 56,
+                    color: colorScheme.onPrimary,
+                  ),
+                ),
+              ],
             ),
           ),
           ...AppRouter.primaryDestinations.map(

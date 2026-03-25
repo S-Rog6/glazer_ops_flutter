@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../constants/app_colors.dart';
 import '../../routes/app_router.dart';
 
 class AppBottomNav extends StatelessWidget {
@@ -15,29 +16,65 @@ class AppBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final barBackground =
+        theme.bottomNavigationBarTheme.backgroundColor ?? colorScheme.surface;
 
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      backgroundColor:
-          theme.bottomNavigationBarTheme.backgroundColor ??
-          theme.colorScheme.surface,
-      selectedItemColor:
-          theme.bottomNavigationBarTheme.selectedItemColor ??
-          theme.colorScheme.primary,
-      unselectedItemColor:
-          theme.bottomNavigationBarTheme.unselectedItemColor ??
-          theme.colorScheme.onSurfaceVariant,
-      showUnselectedLabels: true,
-      currentIndex: currentIndex,
-      onTap: onTap,
-      items: AppRouter.primaryDestinations
-          .map(
-            (destination) => BottomNavigationBarItem(
-              icon: Icon(destination.icon),
-              label: destination.label,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                AppColors.secondaryDark,
+                Color.alphaBlend(
+                  AppColors.primary.withValues(alpha: 0.18),
+                  AppColors.secondaryDark,
+                ),
+              ],
             ),
-          )
-          .toList(),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 5),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/images/Logo.png',
+                height: 22,
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  Icons.business,
+                  size: 20,
+                  color: colorScheme.onPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: barBackground,
+          selectedItemColor:
+              theme.bottomNavigationBarTheme.selectedItemColor ??
+              colorScheme.primary,
+          unselectedItemColor:
+              theme.bottomNavigationBarTheme.unselectedItemColor ??
+              colorScheme.onSurfaceVariant,
+          showUnselectedLabels: true,
+          currentIndex: currentIndex,
+          onTap: onTap,
+          items: AppRouter.primaryDestinations
+              .map(
+                (destination) => BottomNavigationBarItem(
+                  icon: Icon(destination.icon),
+                  label: destination.label,
+                ),
+              )
+              .toList(),
+        ),
+      ],
     );
   }
 }

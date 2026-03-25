@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../constants/app_colors.dart';
 import '../../routes/app_router.dart';
 import 'app_bottom_nav.dart';
 import 'app_drawer.dart';
@@ -29,15 +30,15 @@ class AppShell extends StatelessWidget {
     final isMobile = screenWidth < 700;
     final showBottomNav = isMobile && currentIndex >= 0;
     final showDrawer = !isMobile;
-    final backgroundWash = Color.alphaBlend(
-      colorScheme.secondary.withValues(
-        alpha: theme.brightness == Brightness.dark ? 0.08 : 0.05,
+    final topWash = Color.alphaBlend(
+      AppColors.secondaryDark.withValues(
+        alpha: theme.brightness == Brightness.dark ? 0.12 : 0.035,
       ),
       theme.scaffoldBackgroundColor,
     );
-    final accentWash = Color.alphaBlend(
-      colorScheme.primary.withValues(
-        alpha: theme.brightness == Brightness.dark ? 0.12 : 0.08,
+    final bottomWash = Color.alphaBlend(
+      AppColors.secondary.withValues(
+        alpha: theme.brightness == Brightness.dark ? 0.06 : 0.02,
       ),
       theme.scaffoldBackgroundColor,
     );
@@ -49,7 +50,7 @@ class AppShell extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [accentWash, theme.scaffoldBackgroundColor, backgroundWash],
+            colors: [topWash, theme.scaffoldBackgroundColor, bottomWash],
           ),
         ),
         child: body,
