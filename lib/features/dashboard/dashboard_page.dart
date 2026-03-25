@@ -16,16 +16,22 @@ class DashboardPage extends StatelessWidget {
         .where((job) => _pinnedJobIds.contains(job.id))
         .toList();
 
-    return Column(
-      children: [
-        Expanded(
-          child: CardDisplayArea(title: "Today's jobs", jobs: todaysJobs),
-        ),
-        const Divider(height: 1),
-        Expanded(
-          child: CardDisplayArea(title: 'Pinned', jobs: pinnedJobs),
-        ),
-      ],
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          CardDisplayArea(
+            title: "Today's jobs",
+            jobs: todaysJobs,
+            maxVisibleItems: 4,
+          ),
+          const Divider(height: 1),
+          CardDisplayArea(
+            title: 'Pinned',
+            jobs: pinnedJobs,
+            maxVisibleItems: 4,
+          ),
+        ],
+      ),
     );
   }
 

@@ -9,11 +9,16 @@ class CardDisplayArea extends StatefulWidget {
   final List<Job> jobs;
   final List<Widget> actions;
 
+  /// When set, the area renders without its own scroll view and shows at most
+  /// [maxVisibleItems] cards, with a "View More / View Less" toggle button.
+  final int? maxVisibleItems;
+
   const CardDisplayArea({
     super.key,
     required this.title,
     required this.jobs,
     this.actions = const [],
+    this.maxVisibleItems,
   });
 
   @override
@@ -25,6 +30,7 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
 
   final TextEditingController _searchController = TextEditingController();
   String _selectedStatus = _allStatuses;
+  bool _isExpanded = false;
 
   @override
   void dispose() {
@@ -51,6 +57,153 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
         final panelSurface = colorScheme.surface;
         final filterSurface = colorScheme.surfaceContainerHighest;
 
+        final hasLimit = widget.maxVisibleItems != null;
+        final visibleJobs = hasLimit && !_isExpanded
+            ? filteredJobs.take(widget.maxVisibleItems!).toList()
+            : filteredJobs;
+        final hasMore = hasLimit && filteredJobs.length > widget.maxVisibleItems!;
+
+        final panel = Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1200),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppSizes.paddingLarge),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+                border: Border.all(
+                  color: colorScheme.outline.withValues(alpha: 0.8),
+                ),
+                color: panelSurface,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: theme.brightness == Brightness.dark ? 0.16 : 0.05),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          widget.title,
+                          style: theme.textTheme.headlineSmall,
+                        ),
+                      ),
+                      if (widget.actions.isNotEmpty) ...widget.actions,
+                    ],
+                  ),
+                  const SizedBox(height: AppSizes.paddingLarge),
+                  Wrap(
+                    spacing: AppSizes.paddingSmall,
+                    runSpacing: AppSizes.paddingSmall,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: searchFieldWidth,
+                        child: TextField(
+                          controller: _searchController,
+                          onChanged: (_) => setState(() {}),
+                          decoration: InputDecoration(
+                            hintText: 'Search by job name, PO, or site',
+                            fillColor: filterSurface,
+                            prefixIcon: const Icon(Icons.search),
+                            suffixIcon: _searchController.text.isEmpty
+                                ? null
+                                : IconButton(
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      setState(() {});
+                                    },
+                                    icon: const Icon(Icons.close),
+                                  ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: statusFieldWidth,
+                        child: DropdownButtonFormField<String>(
+                          initialValue: _selectedStatus,
+                          decoration: InputDecoration(
+                            labelText: 'Status',
+                            fillColor: filterSurface,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                          ),
+                          onChanged: (value) {
+                            if (value == null) {
+                              return;
+                            }
+
+                            setState(() => _selectedStatus = value);
+                          },
+                          items: statuses
+                              .map(
+                                (status) => DropdownMenuItem<String>(
+                                  value: status,
+                                  child: Text(status),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: Text(
+                          '${filteredJobs.length} of ${widget.jobs.length} jobs',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSizes.paddingLarge),
+                  if (filteredJobs.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSizes.paddingLarge,
+                      ),
+                      child: Text(
+                        'No jobs match the current filters.',
+                        style: theme.textTheme.bodyLarge,
+                      ),
+                    )
+                  else
+                    ...visibleJobs.map((job) => JobCard(job: job)),
+                  if (hasMore)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: () => setState(() => _isExpanded = !_isExpanded),
+                        icon: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
+                        label: Text(_isExpanded ? 'View Less' : 'View More'),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+
+        if (hasLimit) {
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
+              isMobile ? AppSizes.paddingSmall : AppSizes.paddingLarge,
+              AppSizes.paddingSmall,
+              isMobile ? AppSizes.paddingSmall : AppSizes.paddingLarge,
+              AppSizes.paddingLarge,
+            ),
+            child: panel,
+          );
+        }
+
         return SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(
             isMobile ? AppSizes.paddingSmall : AppSizes.paddingLarge,
@@ -58,125 +211,7 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
             isMobile ? AppSizes.paddingSmall : AppSizes.paddingLarge,
             AppSizes.paddingLarge,
           ),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1200),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppSizes.paddingLarge),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
-                  border: Border.all(
-                    color: colorScheme.outline.withValues(alpha: 0.8),
-                  ),
-                  color: panelSurface,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: theme.brightness == Brightness.dark ? 0.16 : 0.05),
-                      blurRadius: 16,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            widget.title,
-                            style: theme.textTheme.headlineSmall,
-                          ),
-                        ),
-                        if (widget.actions.isNotEmpty) ...widget.actions,
-                      ],
-                    ),
-                    const SizedBox(height: AppSizes.paddingLarge),
-                    Wrap(
-                      spacing: AppSizes.paddingSmall,
-                      runSpacing: AppSizes.paddingSmall,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        SizedBox(
-                          width: searchFieldWidth,
-                          child: TextField(
-                            controller: _searchController,
-                            onChanged: (_) => setState(() {}),
-                            decoration: InputDecoration(
-                              hintText: 'Search by job name, PO, or site',
-                              fillColor: filterSurface,
-                              prefixIcon: const Icon(Icons.search),
-                              suffixIcon: _searchController.text.isEmpty
-                                  ? null
-                                  : IconButton(
-                                      onPressed: () {
-                                        _searchController.clear();
-                                        setState(() {});
-                                      },
-                                      icon: const Icon(Icons.close),
-                                    ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: statusFieldWidth,
-                          child: DropdownButtonFormField<String>(
-                            initialValue: _selectedStatus,
-                            decoration: InputDecoration(
-                              labelText: 'Status',
-                              fillColor: filterSurface,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                            ),
-                            onChanged: (value) {
-                              if (value == null) {
-                                return;
-                              }
-
-                              setState(() => _selectedStatus = value);
-                            },
-                            items: statuses
-                                .map(
-                                  (status) => DropdownMenuItem<String>(
-                                    value: status,
-                                    child: Text(status),
-                                  ),
-                                )
-                                .toList(),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: Text(
-                            '${filteredJobs.length} of ${widget.jobs.length} jobs',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSizes.paddingLarge),
-                    if (filteredJobs.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppSizes.paddingLarge,
-                        ),
-                        child: Text(
-                          'No jobs match the current filters.',
-                          style: theme.textTheme.bodyLarge,
-                        ),
-                      )
-                    else
-                      ...filteredJobs.map((job) => JobCard(job: job)),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          child: panel,
         );
       },
     );
