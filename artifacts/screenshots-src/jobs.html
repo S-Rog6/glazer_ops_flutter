@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=412, initial-scale=1" />
+  <title>GlazerOps – Jobs</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- App Bar -->
+<div class="app-bar">
+  <span class="app-bar-title">Jobs</span>
+  <div class="app-bar-actions">
+    <button class="icon-btn">⋮</button>
+  </div>
+</div>
+
+<!-- Page Body -->
+<div class="page-body">
+
+  <div class="card-panel">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:var(--pad-lg);">
+      <span class="panel-title" style="margin-bottom:0;flex:1;">Job Display Area</span>
+      <button class="btn-filled" style="font-size:12px;padding:8px 12px;">⚙ Filters</button>
+      <button class="btn-filled" style="font-size:12px;padding:8px 12px;">+ New Job</button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-row">
+      <div class="search-wrap" style="flex:1;min-width:160px;">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" type="text" placeholder="Search by job name, PO, or site" readonly />
+      </div>
+      <select class="status-select">
+        <option>All</option>
+        <option>Open</option>
+        <option>Scheduled</option>
+        <option>In Progress</option>
+        <option>Completed</option>
+      </select>
+      <span class="filter-count">5 of 5 jobs</span>
+    </div>
+
+    <!-- Job Card 1: Tampa Highrise -->
+    <div class="job-card">
+      <div class="status-bar status-bar-open"></div>
+      <div class="job-card-inner">
+        <div class="job-title">Tampa Highrise</div>
+        <div class="job-pills">
+          <span class="pill pill-meta"><span class="pill-icon">🏷</span> PO 12345</span>
+          <span class="pill pill-status-open">Open</span>
+        </div>
+        <div class="location-panel">
+          <div class="location-label">📍 Address</div>
+          <div class="location-value">Downtown Tower</div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-filled">↗ Open Job</button>
+          <button class="btn-outlined">📌 Pin</button>
+          <button class="btn-outlined">📝 Add Note</button>
+          <button class="btn-outlined">📷 Add Photo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Job Card 2: Hospital Install -->
+    <div class="job-card">
+      <div class="status-bar status-bar-scheduled"></div>
+      <div class="job-card-inner">
+        <div class="job-title">Hospital Install</div>
+        <div class="job-pills">
+          <span class="pill pill-meta"><span class="pill-icon">🏷</span> PO 67890</span>
+          <span class="pill pill-status-scheduled">Scheduled</span>
+        </div>
+        <div class="location-panel">
+          <div class="location-label">📍 Address</div>
+          <div class="location-value">General Hospital</div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-filled">↗ Open Job</button>
+          <button class="btn-outlined">📌 Pin</button>
+          <button class="btn-outlined">📝 Add Note</button>
+          <button class="btn-outlined">📷 Add Photo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Job Card 3: Airport Retrofit -->
+    <div class="job-card">
+      <div class="status-bar status-bar-open"></div>
+      <div class="job-card-inner">
+        <div class="job-title">Airport Retrofit</div>
+        <div class="job-pills">
+          <span class="pill pill-meta"><span class="pill-icon">🏷</span> PO 24680</span>
+          <span class="pill pill-status-open">Open</span>
+        </div>
+        <div class="location-panel">
+          <div class="location-label">📍 Address</div>
+          <div class="location-value">Terminal B</div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-filled">↗ Open Job</button>
+          <button class="btn-outlined">📌 Pin</button>
+          <button class="btn-outlined">📝 Add Note</button>
+          <button class="btn-outlined">📷 Add Photo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Job Card 4: University Annex -->
+    <div class="job-card">
+      <div class="status-bar status-bar-completed"></div>
+      <div class="job-card-inner">
+        <div class="job-title">University Annex</div>
+        <div class="job-pills">
+          <span class="pill pill-meta"><span class="pill-icon">🏷</span> PO 11223</span>
+          <span class="pill pill-status-completed">Completed</span>
+        </div>
+        <div class="location-panel">
+          <div class="location-label">📍 Address</div>
+          <div class="location-value">North Campus</div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-filled">↗ Open Job</button>
+          <button class="btn-outlined">📌 Pin</button>
+          <button class="btn-outlined">📝 Add Note</button>
+          <button class="btn-outlined">📷 Add Photo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Job Card 5: Civic Center Lobby -->
+    <div class="job-card">
+      <div class="status-bar status-bar-inprogress"></div>
+      <div class="job-card-inner">
+        <div class="job-title">Civic Center Lobby</div>
+        <div class="job-pills">
+          <span class="pill pill-meta"><span class="pill-icon">🏷</span> PO 33445</span>
+          <span class="pill pill-status-inprogress">In Progress</span>
+        </div>
+        <div class="location-panel">
+          <div class="location-label">📍 Address</div>
+          <div class="location-value">Civic Center</div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-filled">↗ Open Job</button>
+          <button class="btn-outlined">📌 Pin</button>
+          <button class="btn-outlined">📝 Add Note</button>
+          <button class="btn-outlined">📷 Add Photo</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Bottom Navigation -->
+<div class="bottom-nav-wrapper">
+  <div class="logo-strip">
+    <span class="logo-text">⬜ GLAZEROPS</span>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item">
+      <div class="nav-icon">🏠</div>
+      <span class="nav-label">Dashboard</span>
+    </div>
+    <div class="nav-item active">
+      <div class="nav-icon">💼</div>
+      <span class="nav-label">Jobs</span>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">📅</div>
+      <span class="nav-label">Schedule</span>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">👥</div>
+      <span class="nav-label">Contacts</span>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">📝</div>
+      <span class="nav-label">Notes</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

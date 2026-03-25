@@ -1,0 +1,674 @@
+/* GlazerOps Flutter App - Dark Theme CSS Mockup */
+
+:root {
+  --primary: #CC0A14;
+  --primary-light: #E82530;
+  --primary-dark: #8A0610;
+  --secondary: #5C626F;
+  --secondary-dark: #1E2229;
+  --secondary-light: #8C929F;
+  --bg: #0A0A0E;
+  --surface: #111318;
+  --surface-raised: #191C25;
+  --border: #262B36;
+  --border-variant: #2A2F3A;
+  --on-surface: #E8EBF2;
+  --on-surface-variant: #B0B6C2;
+  --wash-maroon: rgba(61,4,8,0.18);
+  --wash-secondary: rgba(30,34,41,0.10);
+  --error: #CF3333;
+  --status-open: #E82530;
+  --status-scheduled: #5C626F;
+  --status-completed: #6B7A8A;
+  --status-in-progress: #7090A8;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --pad-sm: 8px;
+  --pad-md: 16px;
+  --pad-lg: 24px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 412px;
+  min-height: 915px;
+  background: var(--bg);
+  color: var(--on-surface);
+  font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* ── App Bar ── */
+.app-bar {
+  background: var(--surface-raised);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--border);
+}
+
+.app-bar-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: var(--on-surface);
+}
+
+.app-bar-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  color: var(--on-surface);
+}
+
+/* ── Bottom Navigation ── */
+.bottom-nav-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 412px;
+  z-index: 100;
+}
+
+.logo-strip {
+  background: linear-gradient(90deg, #1E2229, #2B1014);
+  padding: 5px 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo-text {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #E82530;
+  text-transform: uppercase;
+}
+
+.bottom-nav {
+  background: var(--surface-raised);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 8px 0 12px;
+  border-top: 1px solid var(--border);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  flex: 1;
+  padding: 4px 0;
+}
+
+.nav-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+}
+
+.nav-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+}
+
+.nav-item.active .nav-label,
+.nav-item.active .nav-icon {
+  color: var(--primary-light);
+}
+
+/* ── Page Body ── */
+.page-body {
+  padding: 8px 8px 140px;
+  background: linear-gradient(135deg, #100508 0%, var(--bg) 50%, #080c11 100%);
+  min-height: calc(915px - 56px);
+}
+
+/* ── Card Panel ── */
+.card-panel {
+  background: var(--surface);
+  border: 1px solid rgba(38,43,54,0.8);
+  border-radius: var(--radius-lg);
+  padding: var(--pad-lg);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.16);
+  margin-bottom: var(--pad-lg);
+}
+
+.panel-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--on-surface);
+  letter-spacing: -0.2px;
+  margin-bottom: var(--pad-lg);
+}
+
+/* ── Filters Row ── */
+.filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: var(--pad-lg);
+}
+
+.search-field {
+  flex: 1;
+  min-width: 180px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px 10px 36px;
+  color: var(--on-surface-variant);
+  font-size: 13px;
+  position: relative;
+}
+
+.search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--on-surface-variant);
+  font-size: 18px;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px 10px 36px;
+  color: var(--on-surface-variant);
+  font-size: 13px;
+  outline: none;
+}
+
+.status-select {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  color: var(--on-surface);
+  font-size: 13px;
+  width: 140px;
+}
+
+.filter-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+  padding: 10px 0;
+  white-space: nowrap;
+}
+
+/* ── Job Card ── */
+.job-card {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 16px;
+  overflow: hidden;
+  position: relative;
+}
+
+.job-card-inner {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 20px 20px 24px;
+  position: relative;
+}
+
+.status-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+}
+
+.status-bar-open {
+  background: linear-gradient(180deg, var(--status-open), var(--secondary));
+}
+.status-bar-scheduled {
+  background: linear-gradient(180deg, var(--status-scheduled), var(--secondary));
+}
+.status-bar-completed {
+  background: linear-gradient(180deg, var(--status-completed), var(--secondary));
+}
+.status-bar-inprogress {
+  background: linear-gradient(180deg, var(--status-in-progress), var(--secondary));
+}
+
+.job-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--on-surface);
+  line-height: 1.05;
+  margin-bottom: 12px;
+}
+
+.job-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid;
+}
+
+.pill-meta {
+  background: rgba(30,34,41,0.3);
+  border-color: var(--border);
+  color: var(--on-surface);
+}
+
+.pill-status-open {
+  background: rgba(232,37,48,0.15);
+  border-color: rgba(232,37,48,0.35);
+  color: var(--status-open);
+}
+.pill-status-scheduled {
+  background: rgba(92,98,111,0.15);
+  border-color: rgba(92,98,111,0.35);
+  color: #8C929F;
+}
+.pill-status-completed {
+  background: rgba(107,122,138,0.15);
+  border-color: rgba(107,122,138,0.35);
+  color: var(--status-completed);
+}
+.pill-status-inprogress {
+  background: rgba(112,144,168,0.18);
+  border-color: rgba(112,144,168,0.35);
+  color: var(--status-in-progress);
+}
+
+.pill-icon {
+  font-size: 14px;
+}
+
+.location-panel {
+  background: rgba(30,34,41,0.4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--pad-md);
+  margin-bottom: 16px;
+  text-align: right;
+}
+
+.location-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+}
+
+.location-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--on-surface);
+  margin-top: 4px;
+}
+
+/* ── Card Buttons ── */
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn-filled {
+  background: var(--primary-light);
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-outlined {
+  background: transparent;
+  color: var(--on-surface-variant);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Dashboard sections ── */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0 -8px var(--pad-lg);
+}
+
+/* ── Job Details Page ── */
+.job-header-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--pad-lg);
+  margin-bottom: var(--pad-lg);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.16);
+}
+
+.job-header-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--on-surface);
+  margin-bottom: 12px;
+}
+
+.tab-bar {
+  display: flex;
+  background: var(--surface-raised);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tab-item {
+  padding: 14px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+  white-space: nowrap;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-item.active {
+  color: var(--primary-light);
+  border-bottom-color: var(--primary-light);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.info-item {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--pad-md);
+}
+
+.info-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.info-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+.description-card {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--pad-md);
+  margin-top: 12px;
+}
+
+.contact-card {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--pad-md);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.contact-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(232,37,48,0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.contact-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+.contact-role {
+  font-size: 12px;
+  color: var(--on-surface-variant);
+  margin-bottom: 4px;
+}
+
+.contact-detail {
+  font-size: 13px;
+  color: var(--on-surface-variant);
+}
+
+/* ── Settings Page ── */
+.settings-card {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.settings-item {
+  padding: var(--pad-md);
+  border-bottom: 1px solid var(--border-variant);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-item:last-child {
+  border-bottom: none;
+}
+
+.settings-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--on-surface);
+}
+
+.settings-sublabel {
+  font-size: 12px;
+  color: var(--on-surface-variant);
+  margin-top: 2px;
+}
+
+.toggle {
+  width: 48px;
+  height: 26px;
+  border-radius: 13px;
+  background: var(--primary);
+  position: relative;
+  cursor: pointer;
+}
+
+.toggle-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: white;
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  transition: right 0.2s;
+}
+
+.list-tile {
+  padding: 14px var(--pad-md);
+  border-bottom: 1px solid var(--border-variant);
+  font-size: 15px;
+  color: var(--on-surface);
+  font-weight: 500;
+}
+
+.list-tile:last-child {
+  border-bottom: none;
+}
+
+/* ── Header action buttons ── */
+.app-bar-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--on-surface-variant);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* ── View more button ── */
+.view-more-btn {
+  color: var(--primary-light);
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── App bar with back button ── */
+.back-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--on-surface);
+  font-size: 22px;
+  cursor: pointer;
+  margin-right: 4px;
+}
+
+/* ── Crew / Notes cards ── */
+.crew-card {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--pad-md);
+  margin-bottom: 12px;
+}
+
+.crew-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+.note-card {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--pad-md);
+  margin-bottom: 12px;
+}
+
+.note-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.note-author {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+.note-date {
+  font-size: 11px;
+  color: var(--on-surface-variant);
+}
+
+/* ── Page Scroll Body (for details) ── */
+.details-body {
+  padding: 8px 8px 120px;
+  background: linear-gradient(135deg, #100508 0%, var(--bg) 50%, #080c11 100%);
+  min-height: calc(915px - 56px - 60px);
+}
+
+/* ── Jobs page header ── */
+.page-header-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
