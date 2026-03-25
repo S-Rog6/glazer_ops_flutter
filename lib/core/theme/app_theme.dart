@@ -34,17 +34,25 @@ class AppTheme {
     );
     final colorScheme = baseScheme.copyWith(
       primary: isDark ? AppColors.primaryLight : AppColors.primary,
+      onPrimary: Colors.white,
+      primaryContainer: isDark ? const Color(0xFF480008) : const Color(0xFFEDD5D6),
+      onPrimaryContainer: isDark ? const Color(0xFFFFB0B4) : const Color(0xFF50000A),
       secondary: isDark ? AppColors.secondary : AppColors.secondaryDark,
+      onSecondary: Colors.white,
+      secondaryContainer: isDark ? const Color(0xFF1E2229) : const Color(0xFFE0E2E8),
+      onSecondaryContainer: isDark ? const Color(0xFFB0B6C2) : const Color(0xFF1E2229),
       tertiary: isDark ? AppColors.secondaryLight : AppColors.secondary,
+      onTertiary: Colors.white,
+      tertiaryContainer: isDark ? const Color(0xFF22262F) : const Color(0xFFDCDEE4),
+      onTertiaryContainer: isDark ? const Color(0xFFB0B6C2) : const Color(0xFF22262F),
       surface: surfaceColor,
       surfaceContainerHighest: raisedSurfaceColor,
-      primaryContainer: isDark ? const Color(0xFF5A0A11) : const Color(0xFFF8D9DC),
-      secondaryContainer: isDark ? const Color(0xFF222933) : const Color(0xFFE5E9EF),
-      tertiaryContainer: isDark ? const Color(0xFF28303B) : const Color(0xFFE2E6EC),
-      onSurface: isDark ? const Color(0xFFE7EBF2) : const Color(0xFF181C22),
-      onSurfaceVariant: isDark ? const Color(0xFFB9C0CB) : const Color(0xFF58606D),
+      onSurface: isDark ? const Color(0xFFE8EBF2) : const Color(0xFF181C22),
+      onSurfaceVariant: isDark ? const Color(0xFFB0B6C2) : const Color(0xFF55606D),
       outline: borderColor,
+      outlineVariant: isDark ? const Color(0xFF2A2F3A) : const Color(0xFFD0D4DB),
       error: AppColors.error,
+      onError: Colors.white,
     );
 
     final baseTheme = ThemeData(
