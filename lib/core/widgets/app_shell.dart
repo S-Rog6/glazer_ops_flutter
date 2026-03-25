@@ -30,15 +30,16 @@ class AppShell extends StatelessWidget {
     final isMobile = screenWidth < 700;
     final showBottomNav = isMobile && currentIndex >= 0;
     final showDrawer = !isMobile;
+    final isDark = theme.brightness == Brightness.dark;
     final topWash = Color.alphaBlend(
-      AppColors.secondaryDark.withValues(
-        alpha: theme.brightness == Brightness.dark ? 0.12 : 0.035,
+      (isDark ? AppColors.darkWashMaroon : AppColors.primary).withValues(
+        alpha: isDark ? 0.18 : 0.04,
       ),
       theme.scaffoldBackgroundColor,
     );
     final bottomWash = Color.alphaBlend(
-      AppColors.secondary.withValues(
-        alpha: theme.brightness == Brightness.dark ? 0.06 : 0.02,
+      (isDark ? AppColors.secondaryDark : AppColors.secondary).withValues(
+        alpha: isDark ? 0.10 : 0.025,
       ),
       theme.scaffoldBackgroundColor,
     );
