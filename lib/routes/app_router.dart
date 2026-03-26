@@ -46,13 +46,13 @@ class AppRouter {
     ),
     AppDestination(
       route: schedule,
-      label: 'Schedule',
-      icon: Icons.schedule,
+      label: 'Calendar Views',
+      icon: Icons.calendar_view_month,
     ),
     AppDestination(
       route: contacts,
-      label: 'Contacts',
-      icon: Icons.contacts,
+      label: 'Organization',
+      icon: Icons.account_tree,
     ),
     AppDestination(
       route: notes,
@@ -143,7 +143,7 @@ class AppRouter {
           settings: routeSettings,
           builder: (_) => const AppShell(
             currentRoute: contacts,
-            body: ContactsPage(),
+            body: OrganizationPage(),
           ),
         );
       case notes:
