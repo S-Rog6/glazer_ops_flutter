@@ -55,19 +55,14 @@ class AppRouter {
       icon: Icons.account_tree,
     ),
     AppDestination(
-      route: notes,
-      label: 'Notes',
-      icon: Icons.note,
+      route: settings,
+      label: 'Settings',
+      icon: Icons.settings,
     ),
   ];
 
   static const List<AppDestination> drawerDestinations = [
     ...primaryDestinations,
-    AppDestination(
-      route: settings,
-      label: 'Settings',
-      icon: Icons.settings,
-    ),
   ];
 
   static bool isShellRoute(String? routeName) {

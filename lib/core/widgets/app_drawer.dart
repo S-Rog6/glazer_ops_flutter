@@ -67,13 +67,6 @@ class AppDrawer extends StatelessWidget {
               onTap: () => onDestinationSelected(destination.route),
             ),
           ),
-          const Divider(),
-          ListTile(
-            selected: currentRoute == AppRouter.settings,
-            leading: const Icon(Icons.settings),
-            title: const Text('Settings'),
-            onTap: () => onDestinationSelected(AppRouter.settings),
-          ),
         ],
       ),
     );
