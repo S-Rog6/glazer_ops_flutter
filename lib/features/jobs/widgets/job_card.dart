@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_sizes.dart';
+import '../../../core/utils/url_launcher_service.dart';
 import '../../../routes/app_router.dart';
+import '../mock_job_details.dart';
 import '../models/job.dart';
+import '../models/job_details_data.dart';
 
 class JobCard extends StatelessWidget {
   final Job job;
+  final bool isPinned;
 
-  const JobCard({super.key, required this.job});
+  const JobCard({super.key, required this.job, this.isPinned = false});
 
   @override
   Widget build(BuildContext context) {
@@ -39,80 +43,47 @@ class JobCard extends StatelessWidget {
           ),
           child: Stack(
             children: [
-              Positioned(
-                left: 0,
-                top: 0,
-                bottom: 0,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [statusColor, colorScheme.secondary],
-                    ),
-                  ),
-                  child: const SizedBox(width: 8),
-                ),
-              ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 20, 20, 20),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    final isCompact = constraints.maxWidth < 760;
+                    final isTight = constraints.maxWidth < 760;
+                    final railWidth = isTight ? 48.0 : 54.0;
+                    final details = mockJobDetails[job.id];
+                    final locationWidth =
+                        (constraints.maxWidth * (isTight ? 0.42 : 0.34))
+                            .clamp(170.0, 280.0)
+                            .toDouble();
                     final summary = _buildSummary(
                       context,
-                      colorScheme,
-                      statusColor,
+                      details,
+                      isTight: isTight,
                     );
+                    final actionRail = _buildActionRail(context);
                     final addressPanel = _AddressPanel(
-                      siteId: job.siteId,
+                      siteName: details?.siteName ?? job.siteId,
+                      fullAddress: _formatAddress(details),
                       accentColor: statusColor,
+                      onOpenMaps: () => _openLocationInMaps(context, details),
+                      isTight: isTight,
                     );
 
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (isCompact) ...[
-                          summary,
-                          const SizedBox(height: AppSizes.paddingMedium),
-                          addressPanel,
-                        ] else
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(child: summary),
-                              const SizedBox(width: AppSizes.paddingLarge),
-                              SizedBox(width: 220, child: addressPanel),
-                            ],
+                    return IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          SizedBox(width: railWidth, child: actionRail),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [summary],
+                            ),
                           ),
-                        const SizedBox(height: 18),
-                        Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: [
-                            FilledButton.icon(
-                              onPressed: () => _openJob(context),
-                              icon: const Icon(Icons.arrow_outward),
-                              label: const Text('Open Job'),
-                            ),
-                            OutlinedButton.icon(
-                              onPressed: () {},
-                              icon: const Icon(Icons.push_pin_outlined),
-                              label: const Text('Pin'),
-                            ),
-                            OutlinedButton.icon(
-                              onPressed: () {},
-                              icon: const Icon(Icons.note_add_outlined),
-                              label: const Text('Add Note'),
-                            ),
-                            OutlinedButton.icon(
-                              onPressed: () {},
-                              icon: const Icon(Icons.add_a_photo_outlined),
-                              label: const Text('Add Photo'),
-                            ),
-                          ],
-                        ),
-                      ],
+                          SizedBox(width: isTight ? 12 : AppSizes.paddingLarge),
+                          SizedBox(width: locationWidth, child: addressPanel),
+                        ],
+                      ),
                     );
                   },
                 ),
@@ -128,17 +99,113 @@ class JobCard extends StatelessWidget {
     Navigator.of(context).pushNamed(AppRouter.jobDetails, arguments: job.id);
   }
 
+  Future<void> _dialPrimaryContact(
+    BuildContext context,
+    String rawPhoneNumber,
+  ) async {
+    try {
+      await UrlLauncherService.dialPhoneNumber(rawPhoneNumber);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to open phone app.')),
+        );
+      }
+    }
+  }
+
+  Future<void> _openLocationInMaps(
+    BuildContext context,
+    JobDetailsData? details,
+  ) async {
+    final query =
+        '${details?.siteName ?? job.siteId} ${_formatAddress(details)}';
+    try {
+      await UrlLauncherService.openMapLocation(query);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Unable to open maps.')));
+      }
+    }
+  }
+
+  Widget _buildActionRail(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: _ActionRailButton(
+            tooltip: isPinned ? 'Pinned' : 'Pin',
+            icon: isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+            isActive: isPinned,
+            activeColor: colorScheme.primary,
+            onPressed: () {},
+          ),
+        ),
+        Expanded(
+          child: _ActionRailButton(
+            tooltip: 'Add Note',
+            icon: Icons.note_add_outlined,
+            onPressed: () {},
+          ),
+        ),
+        Expanded(
+          child: _ActionRailButton(
+            tooltip: 'Add Photo',
+            icon: Icons.add_a_photo_outlined,
+            onPressed: () {},
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatAddress(JobDetailsData? details) {
+    if (details == null) {
+      return job.siteId;
+    }
+
+    final pieces = <String>[
+      details.addressLine1,
+      if (details.addressLine2 != null &&
+          details.addressLine2!.trim().isNotEmpty)
+        details.addressLine2!,
+      '${details.city}, ${details.state} ${details.postalCode}',
+    ];
+
+    return pieces.join(', ');
+  }
+
+  JobContactData? _primaryContact(JobDetailsData? details) {
+    if (details == null || details.contacts.isEmpty) {
+      return null;
+    }
+
+    for (final contact in details.contacts) {
+      if (contact.isPrimary) {
+        return contact;
+      }
+    }
+
+    return details.contacts.first;
+  }
+
   Widget _buildSummary(
     BuildContext context,
-    ColorScheme colorScheme,
-    Color statusColor,
-  ) {
+    JobDetailsData? details, {
+    required bool isTight,
+  }) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final metaBackground = Color.alphaBlend(
-      colorScheme.secondary.withValues(alpha: isDark ? 0.14 : 0.08),
-      colorScheme.surfaceContainerHighest,
-    );
+    final colorScheme = theme.colorScheme;
+    final primaryContact = _primaryContact(details);
+    final primaryContactName = primaryContact?.name ?? 'Not Assigned';
+    final primaryContactPhone = primaryContact?.phone ?? '--';
+    final canCall = primaryContactPhone != '--';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,31 +213,67 @@ class JobCard extends StatelessWidget {
         Text(
           job.jobName,
           style: theme.textTheme.titleLarge?.copyWith(
-            fontSize: 24,
+            fontSize: isTight ? 20 : 24,
             fontWeight: FontWeight.w800,
             height: 1.05,
           ),
+          maxLines: isTight ? 2 : null,
+          overflow: isTight ? TextOverflow.ellipsis : null,
         ),
         const SizedBox(height: 12),
+        Row(
+          children: [
+            Icon(
+              Icons.sell_outlined,
+              size: 18,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              _formatPoNumber(job.poNumber),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Text(
+          'Primary Contact',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
         Wrap(
           spacing: 10,
-          runSpacing: 10,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            _MetaPill(
-              icon: Icons.sell_outlined,
-              label: _formatPoNumber(job.poNumber),
-              backgroundColor: metaBackground,
-              borderColor: colorScheme.outline,
-              foregroundColor: colorScheme.onSurface,
-            ),
-            _StatusPill(
-              label: job.status,
-              backgroundColor: statusColor.withValues(
-                alpha: isDark ? 0.18 : 0.12,
+            Text(
+              primaryContactName,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
               ),
-              borderColor: statusColor.withValues(alpha: isDark ? 0.42 : 0.24),
-              textColor: statusColor,
             ),
+            if (canCall)
+              InkWell(
+                onTap: () => _dialPrimaryContact(context, primaryContactPhone),
+                borderRadius: BorderRadius.circular(4),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 2,
+                    vertical: 2,
+                  ),
+                  child: Text(
+                    primaryContactPhone,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ],
@@ -205,76 +308,50 @@ class JobCard extends StatelessWidget {
   }
 }
 
-class _StatusPill extends StatelessWidget {
-  final String label;
-  final Color backgroundColor;
-  final Color borderColor;
-  final Color textColor;
-
-  const _StatusPill({
-    required this.label,
-    required this.backgroundColor,
-    required this.borderColor,
-    required this.textColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: ShapeDecoration(
-        color: backgroundColor,
-        shape: StadiumBorder(side: BorderSide(color: borderColor)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Text(
-          label,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: textColor),
-        ),
-      ),
-    );
-  }
-}
-
-class _MetaPill extends StatelessWidget {
+class _ActionRailButton extends StatelessWidget {
+  final String tooltip;
   final IconData icon;
-  final String label;
-  final Color backgroundColor;
-  final Color borderColor;
-  final Color foregroundColor;
+  final bool isActive;
+  final Color? activeColor;
+  final VoidCallback onPressed;
 
-  const _MetaPill({
+  const _ActionRailButton({
+    required this.tooltip,
     required this.icon,
-    required this.label,
-    required this.backgroundColor,
-    required this.borderColor,
-    required this.foregroundColor,
+    this.isActive = false,
+    this.activeColor,
+    required this.onPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: ShapeDecoration(
-        color: backgroundColor,
-        shape: StadiumBorder(side: BorderSide(color: borderColor)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: foregroundColor),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: foregroundColor,
-                fontWeight: FontWeight.w600,
+    final colorScheme = Theme.of(context).colorScheme;
+    final resolvedActiveColor = activeColor ?? colorScheme.primary;
+
+    return Tooltip(
+      message: tooltip,
+      child: SizedBox.expand(
+        child: Center(
+          child: IconButton(
+            tooltip: tooltip,
+            onPressed: onPressed,
+            icon: Icon(icon, size: 24),
+            style: IconButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+              foregroundColor: isActive
+                  ? resolvedActiveColor
+                  : colorScheme.primary,
+              backgroundColor: isActive
+                  ? resolvedActiveColor.withValues(alpha: 0.16)
+                  : Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -282,10 +359,19 @@ class _MetaPill extends StatelessWidget {
 }
 
 class _AddressPanel extends StatelessWidget {
-  final String siteId;
+  final String siteName;
+  final String fullAddress;
   final Color accentColor;
+  final VoidCallback onOpenMaps;
+  final bool isTight;
 
-  const _AddressPanel({required this.siteId, required this.accentColor});
+  const _AddressPanel({
+    required this.siteName,
+    required this.fullAddress,
+    required this.accentColor,
+    required this.onOpenMaps,
+    required this.isTight,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -304,26 +390,59 @@ class _AddressPanel extends StatelessWidget {
         border: Border.all(color: colorScheme.outline),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AppSizes.paddingMedium),
+        padding: EdgeInsets.all(isTight ? 12 : AppSizes.paddingMedium),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Icon(Icons.location_on_outlined, size: 18, color: accentColor),
-            const SizedBox(height: 8),
             Text(
-              'Address',
+              'Location',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Text(
-              siteId,
+              siteName,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
+                fontSize: isTight ? 20 : null,
               ),
               textAlign: TextAlign.end,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
+            InkWell(
+              onTap: onOpenMaps,
+              borderRadius: BorderRadius.circular(6),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+                child: Text(
+                  fullAddress,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.primary,
+                  ),
+                  textAlign: TextAlign.end,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            SizedBox(height: isTight ? 6 : 8),
+            TextButton.icon(
+              onPressed: onOpenMaps,
+              style: TextButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTight ? 4 : 8,
+                  vertical: 4,
+                ),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              icon: const Icon(Icons.map_outlined, size: 16),
+              label: const Text('Open Maps'),
             ),
           ],
         ),

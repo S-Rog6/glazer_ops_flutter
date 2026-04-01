@@ -25,7 +25,6 @@ class AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentIndex = AppRouter.primaryIndexForRoute(currentRoute);
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     final screenWidth = MediaQuery.sizeOf(context).width;
     final isMobile = screenWidth < 700;
     final showBottomNav = isMobile && currentIndex >= 0;
@@ -45,7 +44,24 @@ class AppShell extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: Text(AppRouter.titleForRoute(currentRoute))),
+      appBar: AppBar(
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/Logo.png',
+              height: 22,
+              errorBuilder: (context, error, stackTrace) => Icon(
+                Icons.business,
+                size: 20,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(AppRouter.titleForRoute(currentRoute)),
+          ],
+        ),
+      ),
       body: DecoratedBox(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -70,7 +86,8 @@ class AppShell extends StatelessWidget {
       drawer: showDrawer
           ? AppDrawer(
               currentRoute: currentRoute,
-              onDestinationSelected: (routeName) => _navigateTo(context, routeName),
+              onDestinationSelected: (routeName) =>
+                  _navigateTo(context, routeName),
             )
           : null,
     );

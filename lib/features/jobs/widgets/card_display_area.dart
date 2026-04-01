@@ -8,9 +8,15 @@ class CardDisplayArea extends StatefulWidget {
   final String title;
   final List<Job> jobs;
   final List<Widget> actions;
+  final Set<String> pinnedJobIds;
+  final bool showActiveUserToggle;
+  final bool Function(Job job)? isJobForActiveUser;
+  final String activeUserToggleLabel;
 
-  /// When set, the area renders without its own scroll view and shows at most
-  /// [maxVisibleItems] cards, with a "View More / View Less" toggle button.
+  /// Shows at most this many cards before displaying a
+  /// "View More / View Less" toggle button.
+  ///
+  /// Defaults to 4 and supports values from 1 to 20.
   final int? maxVisibleItems;
 
   const CardDisplayArea({
@@ -18,8 +24,16 @@ class CardDisplayArea extends StatefulWidget {
     required this.title,
     required this.jobs,
     this.actions = const [],
-    this.maxVisibleItems,
-  });
+    this.pinnedJobIds = const <String>{},
+    this.showActiveUserToggle = false,
+    this.isJobForActiveUser,
+    this.activeUserToggleLabel = 'My jobs only',
+    this.maxVisibleItems = 4,
+  }) : assert(
+         maxVisibleItems == null ||
+             (maxVisibleItems >= 1 && maxVisibleItems <= 20),
+         'maxVisibleItems must be between 1 and 20',
+       );
 
   @override
   State<CardDisplayArea> createState() => _CardDisplayAreaState();
@@ -30,12 +44,29 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
 
   final TextEditingController _searchController = TextEditingController();
   String _selectedStatus = _allStatuses;
+  bool _showActiveUserOnly = false;
   bool _isExpanded = false;
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant CardDisplayArea oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    final hasSelectedStatus = widget.jobs.any(
+      (job) => job.status == _selectedStatus,
+    );
+    if (_selectedStatus != _allStatuses && !hasSelectedStatus) {
+      _selectedStatus = _allStatuses;
+    }
+
+    if (!widget.showActiveUserToggle || widget.isJobForActiveUser == null) {
+      _showActiveUserOnly = false;
+    }
   }
 
   @override
@@ -52,16 +83,19 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 700;
         final compactPhone = constraints.maxWidth < 380;
-        final searchFieldWidth = compactPhone ? 250.0 : (isMobile ? 320.0 : 340.0);
+        final searchFieldWidth = compactPhone
+            ? 250.0
+            : (isMobile ? 320.0 : 340.0);
         final statusFieldWidth = compactPhone ? 150.0 : 170.0;
         final panelSurface = colorScheme.surface;
         final filterSurface = colorScheme.surfaceContainerHighest;
 
+        final maxVisibleItems = widget.maxVisibleItems ?? 4;
         final hasLimit = widget.maxVisibleItems != null;
         final visibleJobs = hasLimit && !_isExpanded
-            ? filteredJobs.take(widget.maxVisibleItems!).toList()
+            ? filteredJobs.take(maxVisibleItems).toList()
             : filteredJobs;
-        final hasMore = hasLimit && filteredJobs.length > widget.maxVisibleItems!;
+        final hasMore = hasLimit && filteredJobs.length > maxVisibleItems;
 
         final panel = Center(
           child: ConstrainedBox(
@@ -77,7 +111,9 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
                 color: panelSurface,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: theme.brightness == Brightness.dark ? 0.16 : 0.05),
+                    color: Colors.black.withValues(
+                      alpha: theme.brightness == Brightness.dark ? 0.16 : 0.05,
+                    ),
                     blurRadius: 16,
                     offset: const Offset(0, 8),
                   ),
@@ -85,6 +121,7 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
                     children: [
@@ -110,6 +147,7 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
                           onChanged: (_) => setState(() {}),
                           decoration: InputDecoration(
                             hintText: 'Search by job name, PO, or site',
+                            filled: true,
                             fillColor: filterSurface,
                             prefixIcon: const Icon(Icons.search),
                             suffixIcon: _searchController.text.isEmpty
@@ -130,6 +168,7 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
                           initialValue: _selectedStatus,
                           decoration: InputDecoration(
                             labelText: 'Status',
+                            filled: true,
                             fillColor: filterSurface,
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 12,
@@ -162,6 +201,15 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
                           ),
                         ),
                       ),
+                      if (widget.showActiveUserToggle &&
+                          widget.isJobForActiveUser != null)
+                        FilterChip(
+                          label: Text(widget.activeUserToggleLabel),
+                          selected: _showActiveUserOnly,
+                          onSelected: (value) {
+                            setState(() => _showActiveUserOnly = value);
+                          },
+                        ),
                     ],
                   ),
                   const SizedBox(height: AppSizes.paddingLarge),
@@ -176,13 +224,21 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
                       ),
                     )
                   else
-                    ...visibleJobs.map((job) => JobCard(job: job)),
+                    ...visibleJobs.map(
+                      (job) => JobCard(
+                        job: job,
+                        isPinned: widget.pinnedJobIds.contains(job.id),
+                      ),
+                    ),
                   if (hasMore)
                     Align(
                       alignment: Alignment.centerLeft,
                       child: TextButton.icon(
-                        onPressed: () => setState(() => _isExpanded = !_isExpanded),
-                        icon: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
+                        onPressed: () =>
+                            setState(() => _isExpanded = !_isExpanded),
+                        icon: Icon(
+                          _isExpanded ? Icons.expand_less : Icons.expand_more,
+                        ),
                         label: Text(_isExpanded ? 'View Less' : 'View More'),
                       ),
                     ),
@@ -219,10 +275,12 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
 
   bool _matchesFilters(Job job) {
     final query = _searchController.text.trim().toLowerCase();
+    final isActiveUserMatch = !_showActiveUserOnly ||
+        (widget.isJobForActiveUser != null && widget.isJobForActiveUser!(job));
     final matchesStatus =
         _selectedStatus == _allStatuses || job.status == _selectedStatus;
 
-    if (!matchesStatus) {
+    if (!matchesStatus || !isActiveUserMatch) {
       return false;
     }
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../jobs/mock_jobs.dart';
+import '../jobs/controllers/jobs_controller.dart';
 import '../jobs/widgets/card_display_area.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -8,36 +8,31 @@ class DashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final todaysJobs = mockJobs
-        .where((job) => _isSameDay(job.createdAt, now))
-        .toList();
-    final pinnedJobs = mockJobs
-        .where((job) => _pinnedJobIds.contains(job.id))
-        .toList();
+    final jobsController = JobsControllerScope.of(context);
+
+    if (jobsController.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return SingleChildScrollView(
       child: Column(
         children: [
           CardDisplayArea(
             title: "Today's jobs",
-            jobs: todaysJobs,
+            jobs: jobsController.todaysJobs,
+            pinnedJobIds: jobsController.pinnedJobIds,
+            showActiveUserToggle: true,
+            isJobForActiveUser: jobsController.isJobActiveForUser,
             maxVisibleItems: 4,
           ),
-          const Divider(height: 1),
           CardDisplayArea(
             title: 'Pinned',
-            jobs: pinnedJobs,
+            jobs: jobsController.pinnedJobs,
+            pinnedJobIds: jobsController.pinnedJobIds,
             maxVisibleItems: 4,
           ),
         ],
       ),
     );
-  }
-
-  static const Set<String> _pinnedJobIds = {'job-001', 'job-003'};
-
-  bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 }

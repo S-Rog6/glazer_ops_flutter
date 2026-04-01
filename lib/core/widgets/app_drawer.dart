@@ -16,40 +16,47 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    const logoHeight = 120.0;
+    const headerVerticalPadding = 18.0;
+    final headerHeight = logoHeight + (headerVerticalPadding * 2);
 
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppColors.secondaryDark,
-                  Color.alphaBlend(
-                    AppColors.primary.withValues(alpha: 0.18),
-                    AppColors.secondaryDark,
-                  ),
-                ],
+          SizedBox(
+            height: headerHeight,
+            child: DrawerHeader(
+              margin: EdgeInsets.zero,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: headerVerticalPadding,
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.secondaryDark,
+                    Color.alphaBlend(
+                      AppColors.primary.withValues(alpha: 0.18),
+                      AppColors.secondaryDark,
+                    ),
+                  ],
+                ),
+              ),
+              child: SizedBox.expand(
+                child: Image.asset(
                   'assets/images/Logo.png',
-                  height: 60,
+                  alignment: Alignment.centerLeft,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => Icon(
                     Icons.business,
-                    size: 56,
+                    size: logoHeight * 0.8,
                     color: colorScheme.onPrimary,
                   ),
                 ),
-              ],
+              ),
             ),
           ),
           ...AppRouter.primaryDestinations.map(

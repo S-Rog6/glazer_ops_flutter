@@ -269,129 +269,127 @@ VALUES
 -- ---------------------------------------------------------------
 -- JOB ASSIGNMENTS
 -- ---------------------------------------------------------------
-INSERT INTO public.job_assignments (id, job_id, user_id, work_date, status, role, notes)
+INSERT INTO public.job_assignments (id, job_id, user_id, work_date)
 VALUES
   -- Storefront Glass Installation (In Progress)
   (
     'f1000000-0000-0000-0000-000000000001',
     'c1000000-0000-0000-0000-000000000001',
     'e1000000-0000-0000-0000-000000000001',
-    '2026-03-22',
-    'Confirmed', 'Lead Glazier', NULL
+    '2026-03-22'
   ),
   (
     'f1000000-0000-0000-0000-000000000002',
     'c1000000-0000-0000-0000-000000000001',
     'e1000000-0000-0000-0000-000000000002',
-    '2026-03-22',
-    'Confirmed', 'Glazier', NULL
+    '2026-03-22'
   ),
   (
     'f1000000-0000-0000-0000-000000000003',
     'c1000000-0000-0000-0000-000000000001',
     'e1000000-0000-0000-0000-000000000001',
-    '2026-03-24',
-    'Assigned', 'Lead Glazier', NULL
+    '2026-03-24'
   ),
   -- Emergency ER Window Replacement
   (
     'f1000000-0000-0000-0000-000000000004',
     'c1000000-0000-0000-0000-000000000003',
     'e1000000-0000-0000-0000-000000000003',
-    '2026-03-20',
-    'Completed', 'Lead Glazier', 'First window done ahead of schedule.'
+    '2026-03-20'
   ),
   (
     'f1000000-0000-0000-0000-000000000005',
     'c1000000-0000-0000-0000-000000000003',
     'e1000000-0000-0000-0000-000000000004',
-    '2026-03-20',
-    'Completed', 'Glazier', NULL
+    '2026-03-20'
   ),
   (
     'f1000000-0000-0000-0000-000000000006',
     'c1000000-0000-0000-0000-000000000003',
     'e1000000-0000-0000-0000-000000000003',
-    '2026-03-22',
-    'Confirmed', 'Lead Glazier', NULL
+    '2026-03-22'
   ),
   -- Curtain Wall Repair (Scheduled)
   (
     'f1000000-0000-0000-0000-000000000007',
     'c1000000-0000-0000-0000-000000000002',
     'e1000000-0000-0000-0000-000000000001',
-    '2026-04-07',
-    'Assigned', 'Lead Glazier', NULL
+    '2026-04-07'
   ),
   (
     'f1000000-0000-0000-0000-000000000008',
     'c1000000-0000-0000-0000-000000000002',
     'e1000000-0000-0000-0000-000000000002',
-    '2026-04-07',
-    'Assigned', 'Glazier', NULL
+    '2026-04-07'
   ),
   -- Lobby Glass Replacement (Completed)
   (
     'f1000000-0000-0000-0000-000000000009',
     'c1000000-0000-0000-0000-000000000005',
     'e1000000-0000-0000-0000-000000000002',
-    '2026-03-03',
-    'Completed', 'Lead Glazier', NULL
+    '2026-03-03'
   ),
   (
     'f1000000-0000-0000-0000-000000000010',
     'c1000000-0000-0000-0000-000000000005',
     'e1000000-0000-0000-0000-000000000004',
-    '2026-03-03',
-    'Completed', 'Glazier', NULL
+    '2026-03-03'
   );
 
 -- ---------------------------------------------------------------
 -- NOTES
 -- ---------------------------------------------------------------
-INSERT INTO public.notes (id, job_id, author_user_id, content)
+INSERT INTO public.notes (id, job_id, author_user_id, content, created_at)
 VALUES
   (
     'g1000000-0000-0000-0000-000000000001',
     'c1000000-0000-0000-0000-000000000001',
     'e1000000-0000-0000-0000-000000000001',
-    'Framing on floors 1 and 2 complete. Floor 3 framing starts tomorrow. Glass delivery confirmed for Monday.'
+    'Framing on floors 1 and 2 complete. Floor 3 framing starts tomorrow. Glass delivery confirmed for Monday.',
+    '2026-03-22'
+
   ),
   (
     'g1000000-0000-0000-0000-000000000002',
     'c1000000-0000-0000-0000-000000000001',
     'e1000000-0000-0000-0000-000000000002',
-    'Discovered existing sill plates on floor 2 are out of level. May need shimming — flagged to Scott.'
+    'Discovered existing sill plates on floor 2 are out of level. May need shimming — flagged to Scott.',
+    '2026-03-22'
   ),
   (
     'g1000000-0000-0000-0000-000000000003',
     'c1000000-0000-0000-0000-000000000003',
     'e1000000-0000-0000-0000-000000000003',
-    'Window #1 replaced and sealed. Passed infection control walk-through. Two remaining windows tomorrow.'
+    'Window #1 replaced and sealed. Passed infection control walk-through. Two remaining windows tomorrow.',
+    '2026-03-23'
   ),
   (
     'g1000000-0000-0000-0000-000000000004',
     'c1000000-0000-0000-0000-000000000003',
     'e1000000-0000-0000-0000-000000000004',
-    'Hospital provided PPE. Work area cordoned off per their protocol. No issues.'
+    'Hospital provided PPE. Work area cordoned off per their protocol. No issues.',
+    '2026-03-23'
   ),
   (
     'g1000000-0000-0000-0000-000000000005',
     'c1000000-0000-0000-0000-000000000002',
     'e1000000-0000-0000-0000-000000000001',
-    'Scaffold permit submitted to city. Waiting on approval before we can lock in the crew schedule.'
+    'Scaffold permit submitted to city. Waiting on approval before we can lock in the crew schedule.',
+    '2026-03-24'
   ),
   (
     'g1000000-0000-0000-0000-000000000006',
     'c1000000-0000-0000-0000-000000000005',
     'e1000000-0000-0000-0000-000000000002',
-    'Job complete. All panels installed and sealed. Final walk-through with Sandra Kim — she signed off.'
+    'Job complete. All panels installed and sealed. Final walk-through with Sandra Kim — she signed off.',
+    '2026-03-24'
   ),
   (
     'g1000000-0000-0000-0000-000000000007',
     'c1000000-0000-0000-0000-000000000006',
     'e1000000-0000-0000-0000-000000000001',
-    'Job on hold. Hospital board vote pushed to May. Will reschedule crew once we get the green light from Marcus.'
+    'Job on hold. Hospital board vote pushed to May. Will reschedule crew once we get the green light from Marcus.',
+    '2026-03-24'
   );
 
 -- ---------------------------------------------------------------

@@ -7,10 +7,7 @@ import 'models/job_details_data.dart';
 class JobDetailsPage extends StatelessWidget {
   final String jobId;
 
-  const JobDetailsPage({
-    super.key,
-    required this.jobId,
-  });
+  const JobDetailsPage({super.key, required this.jobId});
 
   @override
   Widget build(BuildContext context) {
@@ -21,17 +18,20 @@ class JobDetailsPage extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(job.jobName),
-          bottom: TabBar(
-            isScrollable: true,
-            tabAlignment: TabAlignment.start,
-            tabs: const [
-              Tab(text: 'Overview'),
-              Tab(text: 'Contacts'),
-              Tab(text: 'Crew'),
-              Tab(text: 'Notes'),
-              Tab(text: 'Attachments'),
-            ],
-          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: AppSizes.paddingSmall),
+              child: TextButton.icon(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Edit Job coming soon.')),
+                  );
+                },
+                icon: const Icon(Icons.edit_outlined),
+                label: const Text('Edit Job'),
+              ),
+            ),
+          ],
         ),
         body: SafeArea(
           child: LayoutBuilder(
@@ -53,13 +53,47 @@ class JobDetailsPage extends StatelessWidget {
                       children: [
                         _JobHeaderCard(job: job),
                         const SizedBox(height: AppSizes.paddingLarge),
+                        TabBar(
+                          isScrollable: true,
+                          tabAlignment: TabAlignment.start,
+                          tabs: const [
+                            Tab(text: 'Overview'),
+                            Tab(text: 'Sites'),
+                            Tab(text: 'Crew Schedule'),
+                            Tab(text: 'Notes'),
+                            Tab(text: 'Attachments'),
+                          ],
+                        ),
+                        const SizedBox(height: AppSizes.paddingMedium),
+                        _JobQuickActions(
+                          onPin: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Pin coming soon.')),
+                            );
+                          },
+                          onAddNote: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Add Note coming soon.'),
+                              ),
+                            );
+                          },
+                          onAddPhoto: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Add Photo coming soon.'),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: AppSizes.paddingLarge),
                         SizedBox(
                           height: 760,
                           child: TabBarView(
                             children: [
                               _OverviewTab(job: job),
-                              _ContactsTab(job: job),
-                              _CrewTab(job: job),
+                              _SitesTab(job: job),
+                              _CrewScheduleTab(job: job),
                               _NotesTab(job: job),
                               const _AttachmentsTab(),
                             ],
@@ -93,7 +127,45 @@ class JobDetailsPage extends StatelessWidget {
       city: 'Unknown',
       state: '--',
       postalCode: '-----',
-      siteNotes: 'Add mock detail data when this job is wired to backend views.',
+      siteNotes:
+          'Add mock detail data when this job is wired to backend views.',
+    );
+  }
+}
+
+class _JobQuickActions extends StatelessWidget {
+  final VoidCallback onPin;
+  final VoidCallback onAddNote;
+  final VoidCallback onAddPhoto;
+
+  const _JobQuickActions({
+    required this.onPin,
+    required this.onAddNote,
+    required this.onAddPhoto,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        OutlinedButton.icon(
+          onPressed: onPin,
+          icon: const Icon(Icons.push_pin_outlined),
+          label: const Text('Pin'),
+        ),
+        OutlinedButton.icon(
+          onPressed: onAddNote,
+          icon: const Icon(Icons.note_add_outlined),
+          label: const Text('Add Note'),
+        ),
+        OutlinedButton.icon(
+          onPressed: onAddPhoto,
+          icon: const Icon(Icons.add_a_photo_outlined),
+          label: const Text('Add Photo'),
+        ),
+      ],
     );
   }
 }
@@ -159,7 +231,9 @@ class _JobSummary extends StatelessWidget {
       children: [
         Text(
           job.jobName,
-          style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+          ),
         ),
         const SizedBox(height: AppSizes.paddingSmall),
         Text(
@@ -185,33 +259,99 @@ class _JobSummary extends StatelessWidget {
           ],
         ),
         const SizedBox(height: AppSizes.paddingLarge),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            _MetricTile(
-              label: 'Start',
-              value: _formatDate(job.startDate),
-              icon: Icons.event_available_outlined,
-            ),
-            _MetricTile(
-              label: 'Finish',
-              value: _formatDate(job.endDate),
-              icon: Icons.event_busy_outlined,
-            ),
-            _MetricTile(
-              label: 'Contacts',
-              value: '${job.contacts.length}',
-              icon: Icons.contact_phone_outlined,
-            ),
-            _MetricTile(
-              label: 'Crew Days',
-              value: '${job.crewAssignments.length}',
-              icon: Icons.groups_outlined,
-            ),
-          ],
-        ),
+        _HeaderContactsStrip(job: job),
       ],
+    );
+  }
+}
+
+class _HeaderContactsStrip extends StatelessWidget {
+  final JobDetailsData job;
+
+  const _HeaderContactsStrip({required this.job});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    if (job.contacts.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(AppSizes.paddingMedium),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+          border: Border.all(color: colorScheme.outline),
+          color: colorScheme.surfaceContainerHighest,
+        ),
+        child: Text(
+          'No contacts assigned yet.',
+          style: theme.textTheme.bodyLarge,
+        ),
+      );
+    }
+
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: [
+        for (final contact in job.contacts)
+          _HeaderContactCard(contact: contact),
+      ],
+    );
+  }
+}
+
+class _HeaderContactCard extends StatelessWidget {
+  final JobContactData contact;
+
+  const _HeaderContactCard({required this.contact});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      constraints: const BoxConstraints(minWidth: 180, maxWidth: 280),
+      padding: const EdgeInsets.all(AppSizes.paddingMedium),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+        border: Border.all(color: colorScheme.outline),
+        color: colorScheme.surfaceContainerHighest,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.contact_phone_outlined, color: colorScheme.primary),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  contact.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              if (contact.isPrimary) const _SmallBadge(label: 'Primary'),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(contact.role, style: theme.textTheme.bodyMedium),
+          const SizedBox(height: 4),
+          Text(
+            contact.phone,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.primary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -238,9 +378,18 @@ class _QuickInfoRail extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Site details', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+            Text(
+              'Site details',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             const SizedBox(height: AppSizes.paddingMedium),
-            _InfoRow(icon: Icons.badge_outlined, label: 'Site ID', value: job.siteId),
+            _InfoRow(
+              icon: Icons.badge_outlined,
+              label: 'Site ID',
+              value: job.siteId,
+            ),
             const SizedBox(height: AppSizes.paddingSmall),
             _InfoRow(
               icon: Icons.pin_drop_outlined,
@@ -248,7 +397,11 @@ class _QuickInfoRail extends StatelessWidget {
               value: _formatAddress(job),
             ),
             const SizedBox(height: AppSizes.paddingSmall),
-            _InfoRow(icon: Icons.sticky_note_2_outlined, label: 'Access', value: job.siteNotes),
+            _InfoRow(
+              icon: Icons.sticky_note_2_outlined,
+              label: 'Access',
+              value: job.siteNotes,
+            ),
           ],
         ),
       ),
@@ -274,7 +427,11 @@ class _OverviewTab extends StatelessWidget {
               _DetailLine(label: 'Job name', value: job.jobName),
               _DetailLine(label: 'PO number', value: job.poNumber),
               _DetailLine(label: 'Status', value: job.status),
-              _DetailLine(label: 'Schedule window', value: '${_formatDate(job.startDate)} → ${_formatDate(job.endDate)}'),
+              _DetailLine(
+                label: 'Schedule window',
+                value:
+                    '${_formatDate(job.startDate)} → ${_formatDate(job.endDate)}',
+              ),
               _DetailLine(label: 'Description', value: job.description),
             ],
           ),
@@ -297,55 +454,61 @@ class _OverviewTab extends StatelessWidget {
   }
 }
 
-class _ContactsTab extends StatelessWidget {
+class _SitesTab extends StatelessWidget {
   final JobDetailsData job;
 
-  const _ContactsTab({required this.job});
+  const _SitesTab({required this.job});
 
   @override
   Widget build(BuildContext context) {
-    if (job.contacts.isEmpty) {
-      return const _EmptyState(
-        icon: Icons.contact_phone_outlined,
-        title: 'No contacts yet',
-        message: 'Job and site contacts will appear here once they are available.',
-      );
-    }
-
-    return ListView.separated(
-      itemCount: job.contacts.length,
-      separatorBuilder: (_, _) => const SizedBox(height: AppSizes.paddingMedium),
-      itemBuilder: (context, index) {
-        final contact = job.contacts[index];
-
-        return _SectionCard(
-          title: contact.name,
-          icon: Icons.person_outline,
-          trailing: Wrap(
-            spacing: 8,
-            children: [
-              if (contact.isPrimary) const _SmallBadge(label: 'Primary'),
-              _SmallBadge(label: contact.source == 'job' ? 'Job contact' : 'Site contact'),
-            ],
-          ),
+    return ListView(
+      children: [
+        _SectionCard(
+          title: job.siteName,
+          icon: Icons.location_city_outlined,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _DetailLine(label: 'Role', value: contact.role),
-              _DetailLine(label: 'Phone', value: contact.phone),
-              _DetailLine(label: 'Email', value: contact.email ?? 'Not provided'),
+              _DetailLine(label: 'Site ID', value: job.siteId),
+              _DetailLine(label: 'Address', value: _formatAddress(job)),
+              _DetailLine(label: 'Access notes', value: job.siteNotes),
             ],
           ),
-        );
-      },
+        ),
+        const SizedBox(height: AppSizes.paddingLarge),
+        _SectionCard(
+          title: 'Site contacts',
+          icon: Icons.contact_phone_outlined,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final contact in job.contacts.where(
+                (c) => c.source == 'site',
+              ))
+                _DetailLine(
+                  label: '${contact.name} (${contact.role})',
+                  value: [
+                    contact.phone,
+                    if (contact.email != null) contact.email!,
+                  ].join('\n'),
+                ),
+              if (job.contacts.where((c) => c.source == 'site').isEmpty)
+                _DetailLine(
+                  label: 'Contacts',
+                  value: 'No site contacts are currently assigned.',
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
 
-class _CrewTab extends StatelessWidget {
+class _CrewScheduleTab extends StatelessWidget {
   final JobDetailsData job;
 
-  const _CrewTab({required this.job});
+  const _CrewScheduleTab({required this.job});
 
   @override
   Widget build(BuildContext context) {
@@ -359,7 +522,8 @@ class _CrewTab extends StatelessWidget {
 
     return ListView.separated(
       itemCount: job.crewAssignments.length,
-      separatorBuilder: (_, _) => const SizedBox(height: AppSizes.paddingMedium),
+      separatorBuilder: (_, _) =>
+          const SizedBox(height: AppSizes.paddingMedium),
       itemBuilder: (context, index) {
         final assignment = job.crewAssignments[index];
         final colorScheme = Theme.of(context).colorScheme;
@@ -375,9 +539,15 @@ class _CrewTab extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _DetailLine(label: 'Work date', value: _formatDate(assignment.workDate)),
+              _DetailLine(
+                label: 'Work date',
+                value: _formatDate(assignment.workDate),
+              ),
               _DetailLine(label: 'Role', value: assignment.role),
-              _DetailLine(label: 'Notes', value: assignment.notes ?? 'No notes for this assignment.'),
+              _DetailLine(
+                label: 'Notes',
+                value: assignment.notes ?? 'No notes for this assignment.',
+              ),
             ],
           ),
         );
@@ -403,7 +573,8 @@ class _NotesTab extends StatelessWidget {
 
     return ListView.separated(
       itemCount: job.notes.length,
-      separatorBuilder: (_, _) => const SizedBox(height: AppSizes.paddingMedium),
+      separatorBuilder: (_, _) =>
+          const SizedBox(height: AppSizes.paddingMedium),
       itemBuilder: (context, index) {
         final note = job.notes[index];
 
@@ -429,7 +600,8 @@ class _AttachmentsTab extends StatelessWidget {
     return const _EmptyState(
       icon: Icons.attach_file_outlined,
       title: 'Attachments',
-      message: 'Photo and document uploads will be available once the upload flow is set up.',
+      message:
+          'Photo and document uploads will be available once the upload flow is set up.',
     );
   }
 }
@@ -466,7 +638,9 @@ class _SectionCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
                 ?trailing,
@@ -524,13 +698,12 @@ class _DetailLine extends StatelessWidget {
         children: [
           Text(
             label,
-            style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w700),
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
           ),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: theme.textTheme.bodyLarge?.copyWith(height: 1.4),
-          ),
+          Text(value, style: theme.textTheme.bodyLarge?.copyWith(height: 1.4)),
         ],
       ),
     );
@@ -542,7 +715,11 @@ class _InfoRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _InfoRow({required this.icon, required this.label, required this.value});
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -557,46 +734,21 @@ class _InfoRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w700)),
+              Text(
+                label,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(value, style: theme.textTheme.bodyMedium?.copyWith(height: 1.4)),
+              Text(
+                value,
+                style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
+              ),
             ],
           ),
         ),
       ],
-    );
-  }
-}
-
-class _MetricTile extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-
-  const _MetricTile({required this.label, required this.value, required this.icon});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      constraints: const BoxConstraints(minWidth: 150),
-      padding: const EdgeInsets.all(AppSizes.paddingMedium),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
-        border: Border.all(color: colorScheme.outline),
-        color: colorScheme.surfaceContainerHighest,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: colorScheme.primary),
-          const SizedBox(height: AppSizes.paddingSmall),
-          Text(value, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 4),
-          Text(label, style: Theme.of(context).textTheme.bodySmall),
-        ],
-      ),
     );
   }
 }
@@ -661,7 +813,9 @@ class _StatusChip extends StatelessWidget {
       decoration: ShapeDecoration(
         color: color.withValues(alpha: isDark ? 0.18 : 0.12),
         shape: StadiumBorder(
-          side: BorderSide(color: color.withValues(alpha: isDark ? 0.36 : 0.24)),
+          side: BorderSide(
+            color: color.withValues(alpha: isDark ? 0.36 : 0.24),
+          ),
         ),
       ),
       child: Padding(
@@ -699,7 +853,9 @@ class _SmallBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w700),
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -724,18 +880,36 @@ Color _statusColor(ColorScheme colorScheme, String status) {
 }
 
 String _formatAddress(JobDetailsData job) {
-  final lines = [job.addressLine1, if (job.addressLine2 != null) job.addressLine2!];
+  final lines = [
+    job.addressLine1,
+    if (job.addressLine2 != null) job.addressLine2!,
+  ];
   final cityStatePostal = '${job.city}, ${job.state} ${job.postalCode}';
   return [...lines, cityStatePostal].join('\n');
 }
 
 String _formatDate(DateTime value) {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
   return '${months[value.month - 1]} ${value.day}, ${value.year}';
 }
 
 String _formatDateTime(DateTime value) {
-  final hour = value.hour == 0 ? 12 : (value.hour > 12 ? value.hour - 12 : value.hour);
+  final hour = value.hour == 0
+      ? 12
+      : (value.hour > 12 ? value.hour - 12 : value.hour);
   final minute = value.minute.toString().padLeft(2, '0');
   final meridiem = value.hour >= 12 ? 'PM' : 'AM';
   return '${_formatDate(value)} · $hour:$minute $meridiem';

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../constants/app_colors.dart';
 import '../../routes/app_router.dart';
 
 class AppBottomNav extends StatelessWidget {
@@ -23,36 +22,6 @@ class AppBottomNav extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                AppColors.secondaryDark,
-                Color.alphaBlend(
-                  AppColors.primary.withValues(alpha: 0.18),
-                  AppColors.secondaryDark,
-                ),
-              ],
-            ),
-          ),
-          padding: const EdgeInsets.symmetric(vertical: 5),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/images/Logo.png',
-                height: 22,
-                errorBuilder: (context, error, stackTrace) => Icon(
-                  Icons.business,
-                  size: 20,
-                  color: colorScheme.onPrimary,
-                ),
-              ),
-            ],
-          ),
-        ),
         BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
           backgroundColor: barBackground,
