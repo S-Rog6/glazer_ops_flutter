@@ -10,10 +10,10 @@ class SupabaseBootstrapState {
   });
 
   const SupabaseBootstrapState.notConfigured()
-      : isConfigured = false,
-        isReady = false,
-        message =
-            'Supabase URL/key are not configured. The app will run in mock mode.';
+    : isConfigured = false,
+      isReady = false,
+      message =
+          'Supabase URL/key are not configured. Live data is unavailable until the app is launched with valid Supabase values.';
 
   final bool isConfigured;
   final bool isReady;
@@ -48,7 +48,7 @@ class SupabaseBootstrap {
         isConfigured: true,
         isReady: false,
         message:
-            'Supabase initialization failed. The app will use mock data instead. Error: $error',
+            'Supabase initialization failed. Live data is unavailable. Error: $error',
       );
     }
   }

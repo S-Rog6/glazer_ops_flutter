@@ -33,7 +33,7 @@ flutter analyze
 ## First Targets
 
 * Keep the app booting through centralized routes
-* Build a clickable jobs flow using mock data
+* Build a clickable jobs flow backed by Supabase
 * Replace placeholder pages with real feature UI
 
 ---
@@ -56,7 +56,7 @@ The app can now read jobs and job details from Supabase when these
 
 * `SUPABASE_URL`
 * `SUPABASE_ANON_KEY`
-* `SUPABASE_PROFILE_ID` -> optional for general reads, but currently needed if you want `Pinned` and `My jobs only` to reflect a real user before auth is wired end-to-end
+* `SUPABASE_PROFILE_ID` -> optional override for user-scoped reads such as `Pinned` and `My jobs only`; if omitted, the app falls back to the signed-in Supabase user ID when auth is available
 
 The app also accepts these existing Next-style names:
 
@@ -84,12 +84,12 @@ flutter run `
 
 Notes:
 
-* If `SUPABASE_URL` and `SUPABASE_ANON_KEY` are omitted, the app falls back to mock data
-* If Supabase initialization fails at startup, the app also falls back to mock data instead of crashing the whole app
-* The live job list reads from `jobs` plus related `sites`, contacts, assignments, and notes tables
+* If `SUPABASE_URL` and `SUPABASE_ANON_KEY` are omitted, the app stays up but jobs-related screens report that live Supabase access is unavailable
+* If Supabase initialization fails at startup, the app preserves the bootstrap error and surfaces it through the repository instead of silently swapping in demo data
+* The live job list, job details, and calendar views read from `jobs` plus related `sites`, contacts, assignments, and notes tables
 * The current details UI was aligned to the actual schema, which stores address data as `address_line_1` and `address_line_2`
 * `job_assignments` in the current schema does not include assignment role/status fields, so the UI derives a simple display status from the parent job status
-* Auth login is still placeholder UI; the temporary `SUPABASE_PROFILE_ID` is how user-specific reads work until auth/session wiring is added
+* Auth login is still placeholder UI; until end-to-end auth is wired, `SUPABASE_PROFILE_ID` remains the safest way to align user-scoped reads with `profiles.id`
 
 ### Connection Diagnostics
 
@@ -101,10 +101,10 @@ The Settings page now includes:
 The connection card shows:
 
 * whether Supabase is configured
-* whether the app is currently using Supabase or mock data
+* whether the app is currently using live Supabase reads or an unavailable Supabase state
 * the project host
 * the configured profile ID in masked form
-* bootstrap status and fallback reason
+* bootstrap status and the current availability reason
 * the last successful data refresh
 * the last connection test result
 
@@ -112,8 +112,8 @@ The connection card shows:
 
 Current connection-related behavior:
 
-* Missing config -> app runs in mock mode and the connection test explains that Supabase is not configured
-* Initialization failure -> app runs in mock mode and preserves the bootstrap error message for diagnostics
+* Missing config -> app stays up, but jobs screens report that Supabase is not configured and the connection test explains what is missing
+* Initialization failure -> app stays up, but jobs screens and Settings preserve the bootstrap error instead of substituting demo data
 * PostgREST query failure -> repository errors are normalized into clearer messages, including RLS guidance when the failure looks policy-related
 * Refresh failures -> dashboard/jobs pages and the Settings page surface the repository error instead of failing silently
 * Unexpected connection-test errors -> Settings converts them into a visible failed test result instead of leaving the UI in a loading state

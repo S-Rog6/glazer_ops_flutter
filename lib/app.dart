@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -7,8 +9,8 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'features/jobs/controllers/jobs_controller.dart';
 import 'features/jobs/data/jobs_repository.dart';
-import 'features/jobs/data/mock_jobs_repository.dart';
 import 'features/jobs/data/supabase_jobs_repository.dart';
+import 'features/jobs/data/unavailable_jobs_repository.dart';
 import 'routes/app_router.dart';
 
 class GlazerOpsApp extends StatefulWidget {
@@ -22,6 +24,7 @@ class _GlazerOpsAppState extends State<GlazerOpsApp> {
   late final ThemeController _themeController;
   late final JobsRepository _jobsRepository;
   late final JobsController _jobsController;
+  StreamSubscription<AuthState>? _authSubscription;
 
   @override
   void initState() {
@@ -29,18 +32,52 @@ class _GlazerOpsAppState extends State<GlazerOpsApp> {
     _themeController = ThemeController();
     _jobsRepository = SupabaseBootstrap.state.isReady
         ? SupabaseJobsRepository(Supabase.instance.client)
-        : const MockJobsRepository();
+        : UnavailableJobsRepository(SupabaseBootstrap.state);
     _jobsController = JobsController(
       repository: _jobsRepository,
-      activeUserId: SupabaseBootstrap.state.isReady
-          ? AppEnvironment.activeProfileId
-          : MockJobsRepository.defaultActiveUserId,
+      activeUserId: _resolveActiveUserId(),
     );
-    _jobsController.fetchJobs();
+    unawaited(_jobsController.fetchJobs());
+
+    if (SupabaseBootstrap.state.isReady) {
+      _authSubscription = Supabase.instance.client.auth.onAuthStateChange
+          .listen((data) {
+            final didChangeActiveUser = _jobsController.updateActiveUserId(
+              _resolveActiveUserId(session: data.session),
+            );
+            if (didChangeActiveUser) {
+              unawaited(_jobsController.fetchJobs());
+            }
+          });
+    }
+  }
+
+  String? _resolveActiveUserId({Session? session}) {
+    final configuredProfileId = AppEnvironment.activeProfileId;
+    if (configuredProfileId != null) {
+      return configuredProfileId;
+    }
+
+    final sessionUserId = session?.user.id;
+    if (sessionUserId != null && sessionUserId.trim().isNotEmpty) {
+      return sessionUserId;
+    }
+
+    if (!SupabaseBootstrap.state.isReady) {
+      return null;
+    }
+
+    final currentUserId = Supabase.instance.client.auth.currentUser?.id;
+    if (currentUserId == null || currentUserId.trim().isEmpty) {
+      return null;
+    }
+
+    return currentUserId;
   }
 
   @override
   void dispose() {
+    _authSubscription?.cancel();
     _jobsController.dispose();
     _themeController.dispose();
     super.dispose();

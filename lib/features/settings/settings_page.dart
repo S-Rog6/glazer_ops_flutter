@@ -74,12 +74,18 @@ class _SettingsPageState extends State<SettingsPage> {
                   value: AppEnvironment.supabaseHost,
                 ),
                 _InfoRow(
-                  label: 'Profile ID',
-                  value: AppEnvironment.maskedProfileId,
+                  label: 'Active user ID',
+                  value: AppEnvironment.maskProfileId(
+                    jobsController.activeUserId,
+                  ),
                 ),
                 _InfoRow(
                   label: 'Bootstrap status',
-                  value: bootstrapState.isReady ? 'Ready' : 'Fallback',
+                  value: bootstrapState.isReady
+                      ? 'Ready'
+                      : (bootstrapState.isConfigured
+                            ? 'Initialization failed'
+                            : 'Not configured'),
                 ),
                 _InfoRow(
                   label: 'Bootstrap details',
@@ -87,7 +93,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 _InfoRow(
                   label: 'Last successful refresh',
-                  value: _formatTimestamp(jobsController.lastSuccessfulRefreshAt),
+                  value: _formatTimestamp(
+                    jobsController.lastSuccessfulRefreshAt,
+                  ),
                 ),
                 _InfoRow(
                   label: 'Last connection test',
@@ -108,10 +116,10 @@ class _SettingsPageState extends State<SettingsPage> {
                       onPressed: _isTestingConnection
                           ? null
                           : () => _testConnection(
-                                context,
-                                repository: repository,
-                                jobsController: jobsController,
-                              ),
+                              context,
+                              repository: repository,
+                              jobsController: jobsController,
+                            ),
                       icon: _isTestingConnection
                           ? const SizedBox(
                               width: 16,
@@ -129,9 +137,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       onPressed: _isRefreshingData || jobsController.isLoading
                           ? null
                           : () => _refreshData(
-                                context,
-                                jobsController: jobsController,
-                              ),
+                              context,
+                              jobsController: jobsController,
+                            ),
                       icon: _isRefreshingData || jobsController.isLoading
                           ? const SizedBox(
                               width: 16,
@@ -193,7 +201,8 @@ class _SettingsPageState extends State<SettingsPage> {
         isConfigured: AppEnvironment.isSupabaseConfigured,
         isLiveDataSource: repository.isLiveDataSource,
         title: 'Connection test failed',
-        message: 'Unexpected error while testing the data source. Error: $error',
+        message:
+            'Unexpected error while testing the data source. Error: $error',
         checkedAt: DateTime.now(),
       );
     }
@@ -259,10 +268,7 @@ class _SettingsPageState extends State<SettingsPage> {
 }
 
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({
-    required this.label,
-    required this.value,
-  });
+  const _InfoRow({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -286,12 +292,7 @@ class _InfoRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              value,
-              style: theme.textTheme.bodyMedium,
-            ),
-          ),
+          Expanded(child: Text(value, style: theme.textTheme.bodyMedium)),
         ],
       ),
     );
@@ -326,16 +327,16 @@ class _ConnectionResultBanner extends StatelessWidget {
           Text(
             status.title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: foreground,
-                  fontWeight: FontWeight.w700,
-                ),
+              color: foreground,
+              fontWeight: FontWeight.w700,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
             status.message,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: foreground,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: foreground),
           ),
         ],
       ),

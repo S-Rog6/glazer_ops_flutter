@@ -4,13 +4,12 @@ import '../data/jobs_repository.dart';
 import '../models/job.dart';
 
 class JobsController extends ChangeNotifier {
-  JobsController({
-    required JobsRepository repository,
-    this.activeUserId,
-  }) : _repository = repository;
+  JobsController({required JobsRepository repository, String? activeUserId})
+    : _repository = repository,
+      _activeUserId = _normalizeUserId(activeUserId);
 
   final JobsRepository _repository;
-  final String? activeUserId;
+  String? _activeUserId;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -27,8 +26,9 @@ class JobsController extends ChangeNotifier {
   DateTime? get lastSuccessfulRefreshAt => _lastSuccessfulRefreshAt;
   String get dataSourceLabel => _repository.dataSourceLabel;
   bool get isLiveDataSource => _repository.isLiveDataSource;
+  String? get activeUserId => _activeUserId;
   bool get hasActiveUserContext =>
-      activeUserId != null && activeUserId!.trim().isNotEmpty;
+      _activeUserId != null && _activeUserId!.trim().isNotEmpty;
 
   List<Job> get todaysJobs {
     final now = DateTime.now();
@@ -48,6 +48,17 @@ class JobsController extends ChangeNotifier {
 
   List<Job> get allJobs => _allJobs;
 
+  bool updateActiveUserId(String? activeUserId) {
+    final normalizedUserId = _normalizeUserId(activeUserId);
+    if (normalizedUserId == _activeUserId) {
+      return false;
+    }
+
+    _activeUserId = normalizedUserId;
+    notifyListeners();
+    return true;
+  }
+
   Future<bool> fetchJobs() async {
     _isLoading = true;
     _errorMessage = null;
@@ -55,7 +66,7 @@ class JobsController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final snapshot = await _repository.fetchJobs(activeUserId: activeUserId);
+      final snapshot = await _repository.fetchJobs(activeUserId: _activeUserId);
       _allJobs = snapshot.jobs;
       _pinnedJobIds = snapshot.pinnedJobIds;
       _assignedJobIds = snapshot.assignedJobIds;
@@ -87,4 +98,13 @@ class JobsControllerScope extends InheritedNotifier<JobsController> {
     assert(scope != null, 'JobsControllerScope not found in widget tree.');
     return scope!.notifier!;
   }
+}
+
+String? _normalizeUserId(String? value) {
+  final trimmedValue = value?.trim();
+  if (trimmedValue == null || trimmedValue.isEmpty) {
+    return null;
+  }
+
+  return trimmedValue;
 }

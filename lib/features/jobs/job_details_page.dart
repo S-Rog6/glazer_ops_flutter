@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../core/constants/app_sizes.dart';
 import 'data/jobs_repository.dart';
-import 'mock_job_details.dart';
 import 'models/job_details_data.dart';
 
 class JobDetailsPage extends StatefulWidget {
@@ -67,10 +66,7 @@ class _JobDetailsPageState extends State<JobDetailsPage> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 12),
-                    FilledButton(
-                      onPressed: _retry,
-                      child: const Text('Retry'),
-                    ),
+                    FilledButton(onPressed: _retry, child: const Text('Retry')),
                   ],
                 ),
               ),
@@ -78,9 +74,28 @@ class _JobDetailsPageState extends State<JobDetailsPage> {
           );
         }
 
-        final job = snapshot.data ??
-            mockJobDetails[widget.jobId] ??
-            _fallbackJob(widget.jobId);
+        final job = snapshot.data;
+        if (job == null) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Job Details')),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'No Supabase job record was returned for ID ${widget.jobId}.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton(onPressed: _retry, child: const Text('Retry')),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
 
         return DefaultTabController(
           length: 5,
@@ -181,24 +196,6 @@ class _JobDetailsPageState extends State<JobDetailsPage> {
           ),
         );
       },
-    );
-  }
-
-  JobDetailsData _fallbackJob(String id) {
-    return JobDetailsData(
-      id: id,
-      jobName: 'Job $id',
-      poNumber: 'PO-UNKNOWN',
-      status: 'Open',
-      startDate: DateTime(2026, 3, 23),
-      endDate: DateTime(2026, 3, 30),
-      description: 'Mock job details are not configured for this job yet.',
-      siteId: 'site-unknown',
-      siteName: 'Unknown Site',
-      addressLine1: 'Address unavailable',
-      addressLine2: null,
-      siteNotes:
-          'No site details are available for this job yet.',
     );
   }
 }
