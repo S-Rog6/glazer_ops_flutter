@@ -3,16 +3,13 @@ class JobDetailsData {
   final String jobName;
   final String poNumber;
   final String status;
-  final DateTime startDate;
-  final DateTime endDate;
+  final DateTime? startDate;
+  final DateTime? endDate;
   final String description;
   final String siteId;
   final String siteName;
   final String addressLine1;
   final String? addressLine2;
-  final String city;
-  final String state;
-  final String postalCode;
   final String siteNotes;
   final List<JobContactData> contacts;
   final List<JobCrewAssignmentData> crewAssignments;
@@ -30,9 +27,6 @@ class JobDetailsData {
     required this.siteName,
     required this.addressLine1,
     this.addressLine2,
-    required this.city,
-    required this.state,
-    required this.postalCode,
     required this.siteNotes,
     this.contacts = const [],
     this.crewAssignments = const [],

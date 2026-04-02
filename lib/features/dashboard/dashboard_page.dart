@@ -14,6 +14,28 @@ class DashboardPage extends StatelessWidget {
       return const Center(child: CircularProgressIndicator());
     }
 
+    if (jobsController.hasError) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                jobsController.errorMessage ?? 'Failed to load jobs.',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              FilledButton(
+                onPressed: jobsController.fetchJobs,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -21,8 +43,10 @@ class DashboardPage extends StatelessWidget {
             title: "Today's jobs",
             jobs: jobsController.todaysJobs,
             pinnedJobIds: jobsController.pinnedJobIds,
-            showActiveUserToggle: true,
-            isJobForActiveUser: jobsController.isJobActiveForUser,
+            showActiveUserToggle: jobsController.hasActiveUserContext,
+            isJobForActiveUser: jobsController.hasActiveUserContext
+                ? jobsController.isJobActiveForUser
+                : null,
             maxVisibleItems: 4,
           ),
           CardDisplayArea(

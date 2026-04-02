@@ -14,12 +14,37 @@ class JobsPage extends StatelessWidget {
       return const Center(child: CircularProgressIndicator());
     }
 
+    if (jobsController.hasError) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                jobsController.errorMessage ?? 'Failed to load jobs.',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              FilledButton(
+                onPressed: jobsController.fetchJobs,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return SingleChildScrollView(
       child: CardDisplayArea(
         title: 'Job Display Area',
         jobs: jobsController.allJobs,
-        showActiveUserToggle: true,
-        isJobForActiveUser: jobsController.isJobActiveForUser,
+        pinnedJobIds: jobsController.pinnedJobIds,
+        showActiveUserToggle: jobsController.hasActiveUserContext,
+        isJobForActiveUser: jobsController.hasActiveUserContext
+            ? jobsController.isJobActiveForUser
+            : null,
         actions: [
           FilledButton.icon(
             onPressed: () {},

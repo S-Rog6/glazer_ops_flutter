@@ -13,10 +13,7 @@ final Map<String, JobDetailsData> mockJobDetails = {
     siteId: 'site-001',
     siteName: 'Downtown Office Tower',
     addressLine1: '123 N Michigan Ave',
-    addressLine2: 'Suite 100',
-    city: 'Chicago',
-    state: 'IL',
-    postalCode: '60601',
+    addressLine2: 'Suite 100, Chicago, IL 60601',
     siteNotes:
         'High-rise access requires security check-in 30 minutes before arrival. Badge needed for upper floors.',
     contacts: const [
@@ -87,10 +84,7 @@ final Map<String, JobDetailsData> mockJobDetails = {
     siteId: 'site-002',
     siteName: 'Riverside Medical Center',
     addressLine1: '450 River Rd',
-    addressLine2: null,
-    city: 'Chicago',
-    state: 'IL',
-    postalCode: '60607',
+    addressLine2: 'Chicago, IL 60607',
     siteNotes:
         'Hospital campus rules apply. Use south delivery entrance and avoid noisy work after 8 PM.',
     contacts: const [
@@ -148,10 +142,7 @@ final Map<String, JobDetailsData> mockJobDetails = {
     siteId: 'site-003',
     siteName: 'Terminal B',
     addressLine1: '100 Airport Way',
-    addressLine2: null,
-    city: 'Chicago',
-    state: 'IL',
-    postalCode: '60666',
+    addressLine2: 'Chicago, IL 60666',
     siteNotes:
         'Coordinate with airport operations before staging lifts. Access windows are limited during peak traffic hours.',
     contacts: const [
@@ -208,10 +199,7 @@ final Map<String, JobDetailsData> mockJobDetails = {
     siteId: 'site-004',
     siteName: 'Lincoln Park Apartments',
     addressLine1: '2200 N Lincoln Ave',
-    addressLine2: null,
-    city: 'Chicago',
-    state: 'IL',
-    postalCode: '60614',
+    addressLine2: 'Chicago, IL 60614',
     siteNotes:
         'Residents require 24-hour notice for unit access and freight elevator windows must be reserved.',
     contacts: const [
@@ -261,10 +249,7 @@ final Map<String, JobDetailsData> mockJobDetails = {
     siteId: 'site-005',
     siteName: 'Civic Center',
     addressLine1: '1 Civic Plaza',
-    addressLine2: null,
-    city: 'Chicago',
-    state: 'IL',
-    postalCode: '60602',
+    addressLine2: 'Chicago, IL 60602',
     siteNotes:
         'Coordinate with building security before staging in the lobby. Keep one entrance open at all times.',
     contacts: const [

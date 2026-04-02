@@ -290,6 +290,7 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
 
     return job.jobName.toLowerCase().contains(query) ||
         job.poNumber.toLowerCase().contains(query) ||
+        job.siteName.toLowerCase().contains(query) ||
         job.siteId.toLowerCase().contains(query);
   }
 }

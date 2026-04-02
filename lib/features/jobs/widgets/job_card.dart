@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/utils/url_launcher_service.dart';
 import '../../../routes/app_router.dart';
-import '../mock_job_details.dart';
 import '../models/job.dart';
-import '../models/job_details_data.dart';
 
 class JobCard extends StatelessWidget {
   final Job job;
@@ -49,22 +47,20 @@ class JobCard extends StatelessWidget {
                   builder: (context, constraints) {
                     final isTight = constraints.maxWidth < 760;
                     final railWidth = isTight ? 48.0 : 54.0;
-                    final details = mockJobDetails[job.id];
                     final locationWidth =
                         (constraints.maxWidth * (isTight ? 0.42 : 0.34))
                             .clamp(170.0, 280.0)
                             .toDouble();
                     final summary = _buildSummary(
                       context,
-                      details,
                       isTight: isTight,
                     );
                     final actionRail = _buildActionRail(context);
                     final addressPanel = _AddressPanel(
-                      siteName: details?.siteName ?? job.siteId,
-                      fullAddress: _formatAddress(details),
+                      siteName: job.siteName,
+                      fullAddress: _formatAddress(),
                       accentColor: statusColor,
-                      onOpenMaps: () => _openLocationInMaps(context, details),
+                      onOpenMaps: () => _openLocationInMaps(context),
                       isTight: isTight,
                     );
 
@@ -114,12 +110,8 @@ class JobCard extends StatelessWidget {
     }
   }
 
-  Future<void> _openLocationInMaps(
-    BuildContext context,
-    JobDetailsData? details,
-  ) async {
-    final query =
-        '${details?.siteName ?? job.siteId} ${_formatAddress(details)}';
+  Future<void> _openLocationInMaps(BuildContext context) async {
+    final query = '${job.siteName} ${_formatAddress()}';
     try {
       await UrlLauncherService.openMapLocation(query);
     } catch (e) {
@@ -165,47 +157,32 @@ class JobCard extends StatelessWidget {
     );
   }
 
-  String _formatAddress(JobDetailsData? details) {
-    if (details == null) {
-      return job.siteId;
-    }
-
+  String _formatAddress() {
     final pieces = <String>[
-      details.addressLine1,
-      if (details.addressLine2 != null &&
-          details.addressLine2!.trim().isNotEmpty)
-        details.addressLine2!,
-      '${details.city}, ${details.state} ${details.postalCode}',
+      if (job.addressLine1 != null && job.addressLine1!.trim().isNotEmpty)
+        job.addressLine1!,
+      if (job.addressLine2 != null && job.addressLine2!.trim().isNotEmpty)
+        job.addressLine2!,
     ];
+
+    if (pieces.isEmpty) {
+      return job.siteName;
+    }
 
     return pieces.join(', ');
   }
 
-  JobContactData? _primaryContact(JobDetailsData? details) {
-    if (details == null || details.contacts.isEmpty) {
-      return null;
-    }
-
-    for (final contact in details.contacts) {
-      if (contact.isPrimary) {
-        return contact;
-      }
-    }
-
-    return details.contacts.first;
-  }
-
   Widget _buildSummary(
     BuildContext context,
-    JobDetailsData? details, {
+    {
     required bool isTight,
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final primaryContact = _primaryContact(details);
-    final primaryContactName = primaryContact?.name ?? 'Not Assigned';
-    final primaryContactPhone = primaryContact?.phone ?? '--';
-    final canCall = primaryContactPhone != '--';
+    final primaryContactName = job.primaryContactName ?? 'Not Assigned';
+    final primaryContactPhone = job.primaryContactPhone;
+    final canCall =
+        primaryContactPhone != null && primaryContactPhone.trim().isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -258,7 +235,8 @@ class JobCard extends StatelessWidget {
             ),
             if (canCall)
               InkWell(
-                onTap: () => _dialPrimaryContact(context, primaryContactPhone),
+                onTap: () =>
+                    _dialPrimaryContact(context, primaryContactPhone),
                 borderRadius: BorderRadius.circular(4),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(

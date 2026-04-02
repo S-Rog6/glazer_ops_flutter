@@ -1,113 +1,186 @@
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_sizes.dart';
+import 'data/jobs_repository.dart';
 import 'mock_job_details.dart';
 import 'models/job_details_data.dart';
 
-class JobDetailsPage extends StatelessWidget {
+class JobDetailsPage extends StatefulWidget {
   final String jobId;
 
   const JobDetailsPage({super.key, required this.jobId});
 
   @override
-  Widget build(BuildContext context) {
-    final job = mockJobDetails[jobId] ?? _fallbackJob(jobId);
+  State<JobDetailsPage> createState() => _JobDetailsPageState();
+}
 
-    return DefaultTabController(
-      length: 5,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(job.jobName),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: AppSizes.paddingSmall),
-              child: TextButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Edit Job coming soon.')),
-                  );
-                },
-                icon: const Icon(Icons.edit_outlined),
-                label: const Text('Edit Job'),
+class _JobDetailsPageState extends State<JobDetailsPage> {
+  Future<JobDetailsData?>? _jobFuture;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _jobFuture ??= _loadJob();
+  }
+
+  @override
+  void didUpdateWidget(covariant JobDetailsPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.jobId != widget.jobId) {
+      _jobFuture = _loadJob();
+    }
+  }
+
+  Future<JobDetailsData?> _loadJob() {
+    final repository = JobsRepositoryScope.of(context);
+    return repository.fetchJobDetails(widget.jobId);
+  }
+
+  void _retry() {
+    setState(() {
+      _jobFuture = _loadJob();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<JobDetailsData?>(
+      future: _jobFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Job Details')),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Failed to load job details.\n${snapshot.error}',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton(
+                      onPressed: _retry,
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
-        body: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isMobile = constraints.maxWidth < 860;
+          );
+        }
 
-              return SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(
-                  isMobile ? AppSizes.paddingSmall : AppSizes.paddingLarge,
-                  AppSizes.paddingSmall,
-                  isMobile ? AppSizes.paddingSmall : AppSizes.paddingLarge,
-                  AppSizes.paddingLarge,
-                ),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1200),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _JobHeaderCard(job: job),
-                        const SizedBox(height: AppSizes.paddingLarge),
-                        TabBar(
-                          isScrollable: true,
-                          tabAlignment: TabAlignment.start,
-                          tabs: const [
-                            Tab(text: 'Overview'),
-                            Tab(text: 'Sites'),
-                            Tab(text: 'Crew Schedule'),
-                            Tab(text: 'Notes'),
-                            Tab(text: 'Attachments'),
-                          ],
-                        ),
-                        const SizedBox(height: AppSizes.paddingMedium),
-                        _JobQuickActions(
-                          onPin: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Pin coming soon.')),
-                            );
-                          },
-                          onAddNote: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Add Note coming soon.'),
-                              ),
-                            );
-                          },
-                          onAddPhoto: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Add Photo coming soon.'),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: AppSizes.paddingLarge),
-                        SizedBox(
-                          height: 760,
-                          child: TabBarView(
-                            children: [
-                              _OverviewTab(job: job),
-                              _SitesTab(job: job),
-                              _CrewScheduleTab(job: job),
-                              _NotesTab(job: job),
-                              const _AttachmentsTab(),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+        final job = snapshot.data ??
+            mockJobDetails[widget.jobId] ??
+            _fallbackJob(widget.jobId);
+
+        return DefaultTabController(
+          length: 5,
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(job.jobName),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: AppSizes.paddingSmall),
+                  child: TextButton.icon(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Edit Job coming soon.')),
+                      );
+                    },
+                    icon: const Icon(Icons.edit_outlined),
+                    label: const Text('Edit Job'),
                   ),
                 ),
-              );
-            },
+              ],
+            ),
+            body: SafeArea(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isMobile = constraints.maxWidth < 860;
+
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(
+                      isMobile ? AppSizes.paddingSmall : AppSizes.paddingLarge,
+                      AppSizes.paddingSmall,
+                      isMobile ? AppSizes.paddingSmall : AppSizes.paddingLarge,
+                      AppSizes.paddingLarge,
+                    ),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1200),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _JobHeaderCard(job: job),
+                            const SizedBox(height: AppSizes.paddingLarge),
+                            TabBar(
+                              isScrollable: true,
+                              tabAlignment: TabAlignment.start,
+                              tabs: const [
+                                Tab(text: 'Overview'),
+                                Tab(text: 'Sites'),
+                                Tab(text: 'Crew Schedule'),
+                                Tab(text: 'Notes'),
+                                Tab(text: 'Attachments'),
+                              ],
+                            ),
+                            const SizedBox(height: AppSizes.paddingMedium),
+                            _JobQuickActions(
+                              onPin: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Pin coming soon.'),
+                                  ),
+                                );
+                              },
+                              onAddNote: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Add Note coming soon.'),
+                                  ),
+                                );
+                              },
+                              onAddPhoto: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Add Photo coming soon.'),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: AppSizes.paddingLarge),
+                            SizedBox(
+                              height: 760,
+                              child: TabBarView(
+                                children: [
+                                  _OverviewTab(job: job),
+                                  _SitesTab(job: job),
+                                  _CrewScheduleTab(job: job),
+                                  _NotesTab(job: job),
+                                  const _AttachmentsTab(),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -124,11 +197,8 @@ class JobDetailsPage extends StatelessWidget {
       siteName: 'Unknown Site',
       addressLine1: 'Address unavailable',
       addressLine2: null,
-      city: 'Unknown',
-      state: '--',
-      postalCode: '-----',
       siteNotes:
-          'Add mock detail data when this job is wired to backend views.',
+          'No site details are available for this job yet.',
     );
   }
 }
@@ -429,8 +499,7 @@ class _OverviewTab extends StatelessWidget {
               _DetailLine(label: 'Status', value: job.status),
               _DetailLine(
                 label: 'Schedule window',
-                value:
-                    '${_formatDate(job.startDate)} → ${_formatDate(job.endDate)}',
+                value: _formatDateRange(job.startDate, job.endDate),
               ),
               _DetailLine(label: 'Description', value: job.description),
             ],
@@ -882,13 +951,17 @@ Color _statusColor(ColorScheme colorScheme, String status) {
 String _formatAddress(JobDetailsData job) {
   final lines = [
     job.addressLine1,
-    if (job.addressLine2 != null) job.addressLine2!,
+    if (job.addressLine2 != null && job.addressLine2!.trim().isNotEmpty)
+      job.addressLine2!,
   ];
-  final cityStatePostal = '${job.city}, ${job.state} ${job.postalCode}';
-  return [...lines, cityStatePostal].join('\n');
+  return lines.join('\n');
 }
 
-String _formatDate(DateTime value) {
+String _formatDate(DateTime? value) {
+  if (value == null) {
+    return 'TBD';
+  }
+
   const months = [
     'Jan',
     'Feb',
@@ -904,6 +977,22 @@ String _formatDate(DateTime value) {
     'Dec',
   ];
   return '${months[value.month - 1]} ${value.day}, ${value.year}';
+}
+
+String _formatDateRange(DateTime? start, DateTime? end) {
+  if (start == null && end == null) {
+    return 'TBD';
+  }
+
+  if (start == null) {
+    return 'Until ${_formatDate(end)}';
+  }
+
+  if (end == null) {
+    return '${_formatDate(start)} → TBD';
+  }
+
+  return '${_formatDate(start)} → ${_formatDate(end)}';
 }
 
 String _formatDateTime(DateTime value) {

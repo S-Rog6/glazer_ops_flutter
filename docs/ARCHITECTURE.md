@@ -38,6 +38,7 @@ Database (Postgres)
 * API calls
 * Local caching
 * Models
+* Repository boundary for data reads and connection diagnostics
 
 ---
 
@@ -48,6 +49,8 @@ Database (Postgres)
 * Shared UI scaffolding lives in `core/widgets`
 * Feature code is organized under `features/*`
 * Jobs model currently follows backend keys: `job_name`, `po_number`, `site_id`
+* Supabase startup is guarded: missing or broken config falls back to mock repositories instead of hard-failing app startup
+* Settings now exposes repository-driven connection testing and manual data refresh diagnostics
 
 ---
 
