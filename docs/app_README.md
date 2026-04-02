@@ -45,7 +45,7 @@ Start simple:
 * Hardcode data first
 * No API calls yet
 * Keep business logic out of UI widgets
-* When backend work starts, use `DATABASE_SCHEMA.md` as the source of truth for tables and views
+* When backend work starts, treat `supabase-schema-sql.txt` as the exact DDL source and `DATABASE_SCHEMA.md` as the readable summary
 
 ---
 

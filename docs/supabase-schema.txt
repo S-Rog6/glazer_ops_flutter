@@ -1,48 +1,124 @@
-Supabase directory trigger plan
+Current Supabase schema summary
 ===============================
 
-Why this exists
+Source artifacts
 ----------------
-Supabase Storage does not have true folders. A path like
-`jobs/<job_id>/photos/pic.jpg` works because `jobs/<job_id>/photos/` is a key
-prefix, not because a real directory was created ahead of time.
+- `supabase-schema-sql.txt` is the exact SQL export.
+- `supabase-schema-kdglchjsogpinspiigyo.png` is the visual diagram.
+- This file is the quick plain-text summary.
 
-Because of that, the safest database-side solution is:
-1. Store the directory blueprint in Postgres.
-2. Create the blueprint automatically with triggers.
-3. Let the app/server upload files into those paths.
-4. Optionally upload a zero-byte `.keep` file using `placeholder_object` if you
-   want empty folders to appear in admin tooling.
+Tables in the current export
+----------------------------
+- `sites`
+- `jobs`
+- `site_contacts`
+- `job_contacts`
+- `job_assignments`
+- `notes`
+- `profiles`
+- `user_pinned_jobs`
+- `user_settings`
 
-Default user paths
-------------------
-Bucket: `user-files`
-- `users/<user_id>/profile/`
-- `users/<user_id>/documents/`
-- `users/<user_id>/photos/`
+Relationships
+-------------
+- `jobs.site_id -> sites.id`
+- `site_contacts.site_id -> sites.id`
+- `job_contacts.job_id -> jobs.id`
+- `job_assignments.job_id -> jobs.id`
+- `job_assignments.user_id -> profiles.id`
+- `notes.job_id -> jobs.id`
+- `notes.author_user_id -> profiles.id`
+- `user_pinned_jobs.user_id -> profiles.id`
+- `user_pinned_jobs.job_id -> jobs.id`
+- `user_settings.user_id -> profiles.id`
 
-Default job paths
------------------
-Bucket: `job-files`
-- `jobs/<job_id>/contracts/`
-- `jobs/<job_id>/photos/`
-- `jobs/<job_id>/shop-drawings/`
-- `jobs/<job_id>/daily-reports/`
+Important corrections from the older docs
+-----------------------------------------
+- There is no `schedule` table in the current export.
+- There are no read views in the current export.
+- There is no `storage_directories` table in the current export.
+- `profiles.id` is a primary key, but the export does not currently show an FK to `auth.users(id)`.
+- `sites` does not currently include city/state/postal/lat/long columns.
+- `site_contacts` does not currently include `sort_order` or timestamps.
+- `job_assignments` does not currently include status, role, notes, or timestamps.
+- `user_pinned_jobs` does not currently include `pinned_at`.
+- `user_settings` is present and includes card action side, zoom, schedule view, and calculator toggle fields.
 
-Trigger sources
----------------
-- User directories are enqueued from `auth.users` inserts.
-- Job directories are enqueued from `public.jobs` inserts.
+Current table shapes
+--------------------
+sites
+- `id`
+- `name`
+- `address_line_1`
+- `address_line_2`
+- `notes`
+- `updated_at`
 
-User bootstrap note
--------------------
-- The `auth.users` insert is also the correct place to create the matching
-  `public.profiles` row and any future per-user defaults such as
-  `public.user_settings`.
-- Keep those inserts idempotent with `on conflict do nothing`.
+jobs
+- `id`
+- `site_id`
+- `job_name`
+- `po_number`
+- `status`
+- `start_date`
+- `end_date`
+- `description`
+- `created_at`
+- `updated_at`
 
-Notes
------
-- If your app creates users in `public.profiles`, move the user trigger there.
-- If you want one bucket instead of two, replace both bucket IDs with the same
-  bucket name.
+site_contacts
+- `id`
+- `site_id`
+- `name`
+- `role`
+- `phone`
+- `email`
+- `is_primary`
+
+job_contacts
+- `id`
+- `job_id`
+- `name`
+- `role`
+- `phone`
+- `email`
+- `is_primary`
+- `sort_order`
+- `created_at`
+- `updated_at`
+
+job_assignments
+- `id`
+- `job_id`
+- `user_id`
+- `work_date`
+
+notes
+- `id`
+- `job_id`
+- `author_user_id`
+- `content`
+- `created_at`
+- `updated_at`
+
+profiles
+- `id`
+- `full_name`
+- `phone`
+- `avatar_url`
+- `is_active`
+- `created_at`
+- `updated_at`
+
+user_pinned_jobs
+- `user_id`
+- `job_id`
+
+user_settings
+- `user_id`
+- `card_actions_side`
+- `zoom`
+- `schedule_view`
+- `calculator_enabled`
+- `created_at`
+- `updated_at`

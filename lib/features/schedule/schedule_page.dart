@@ -1,5 +1,50 @@
 import 'package:flutter/material.dart';
 
+import '../../routes/app_router.dart';
+import '../jobs/mock_jobs.dart';
+import '../jobs/models/job.dart';
+import '../jobs/widgets/card_display_area.dart';
+
+final Map<String, Job> _jobById = {
+  for (final job in mockJobs) job.id: job,
+};
+
+const Map<String, List<String>> _scheduledJobIdsByDate = {
+  '2026-04-02': ['job-001'],
+  '2026-04-04': ['job-002', 'job-003'],
+  '2026-04-07': ['job-004'],
+  '2026-04-10': ['job-005'],
+  '2026-04-13': ['job-001', 'job-002'],
+  '2026-04-16': ['job-003'],
+  '2026-04-19': ['job-004'],
+  '2026-04-22': ['job-005'],
+  '2026-04-25': ['job-002'],
+  '2026-04-28': ['job-003'],
+};
+
+DateTime _dateOnly(DateTime value) => DateTime(value.year, value.month, value.day);
+
+String _dateKey(DateTime value) {
+  final date = _dateOnly(value);
+  final month = date.month.toString().padLeft(2, '0');
+  final day = date.day.toString().padLeft(2, '0');
+  return '${date.year}-$month-$day';
+}
+
+List<Job> _scheduledJobsForDate(DateTime date) {
+  final jobIds = _scheduledJobIdsByDate[_dateKey(date)] ?? const <String>[];
+
+  return jobIds
+      .map((jobId) => _jobById[jobId])
+      .whereType<Job>()
+      .toList(growable: false);
+}
+
+DateTime _startOfWeek(DateTime value) {
+  final date = _dateOnly(value);
+  return date.subtract(Duration(days: date.weekday % 7));
+}
+
 class SchedulePage extends StatefulWidget {
   const SchedulePage({super.key});
 
@@ -10,6 +55,7 @@ class SchedulePage extends StatefulWidget {
 class _SchedulePageState extends State<SchedulePage>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
+  late DateTime _selectedDay;
 
   static const List<_CalendarViewData> _views = [
     _CalendarViewData(
@@ -43,7 +89,23 @@ class _SchedulePageState extends State<SchedulePage>
   @override
   void initState() {
     super.initState();
+    final now = DateTime.now();
+    _selectedDay = DateTime(now.year, now.month, now.day);
     _tabController = TabController(length: _views.length, vsync: this);
+  }
+
+  void _selectDay(DateTime day, {bool openDayTab = false}) {
+    setState(() {
+      _selectedDay = _dateOnly(day);
+    });
+
+    if (openDayTab) {
+      _tabController.animateTo(2);
+    }
+  }
+
+  void _changeSelectedDay(int deltaDays) {
+    _selectDay(_selectedDay.add(Duration(days: deltaDays)));
   }
 
   @override
@@ -90,10 +152,25 @@ class _SchedulePageState extends State<SchedulePage>
                 .map(
                   (view) {
                     if (view.title == 'Month') {
-                      return const _MonthCalendarView();
+                      return _MonthCalendarView(
+                        selectedDay: _selectedDay,
+                        onDaySelected: (day) =>
+                            _selectDay(day, openDayTab: true),
+                      );
                     }
                     if (view.title == 'Week') {
-                      return const _WeekCalendarView();
+                      return _WeekCalendarView(
+                        selectedDay: _selectedDay,
+                        onDaySelected: (day) =>
+                            _selectDay(day, openDayTab: true),
+                      );
+                    }
+
+                    if (view.title == 'Day') {
+                      return _DayCalendarView(
+                        selectedDay: _selectedDay,
+                        onChangeDay: _changeSelectedDay,
+                      );
                     }
 
                     return _CalendarViewCard(view: view);
@@ -154,7 +231,13 @@ class _CalendarViewCard extends StatelessWidget {
 }
 
 class _MonthCalendarView extends StatefulWidget {
-  const _MonthCalendarView();
+  const _MonthCalendarView({
+    required this.selectedDay,
+    required this.onDaySelected,
+  });
+
+  final DateTime selectedDay;
+  final ValueChanged<DateTime> onDaySelected;
 
   @override
   State<_MonthCalendarView> createState() => _MonthCalendarViewState();
@@ -173,24 +256,27 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
     'Sat',
   ];
 
-  static const Map<int, List<String>> _jobsByDay = {
-    2: ['Temple Demo'],
-    4: ['South Rim Site Walk', 'Permit Follow-up'],
-    7: ['Rough-in Crew A'],
-    10: ['Submittal Deadline'],
-    13: ['Inspection Prep', 'Client Update Call'],
-    16: ['Warehouse Pickup'],
-    19: ['Field Install Team B'],
-    22: ['Closeout Docs'],
-    25: ['Warranty Punchlist'],
-    28: ['Milestone Review'],
-  };
-
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
-    _displayedMonth = DateTime(now.year, now.month, 1);
+    _displayedMonth = DateTime(
+      widget.selectedDay.year,
+      widget.selectedDay.month,
+      1,
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant _MonthCalendarView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (!_isSameMonth(oldWidget.selectedDay, widget.selectedDay)) {
+      _displayedMonth = DateTime(
+        widget.selectedDay.year,
+        widget.selectedDay.month,
+        1,
+      );
+    }
   }
 
   void _changeMonth(int delta) {
@@ -294,61 +380,80 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
                       return const SizedBox.shrink();
                     }
 
-                    final jobs = _jobsByDay[dayNumber] ?? const <String>[];
+                    final dayDate = DateTime(
+                      monthStart.year,
+                      monthStart.month,
+                      dayNumber,
+                    );
+                    final jobs = _scheduledJobsForDate(dayDate);
                     final isToday = isCurrentMonth && dayNumber == todayDay;
+                    final isSelected = _isSameDate(dayDate, widget.selectedDay);
 
-                    return Container(
-                      decoration: BoxDecoration(
+                    return Material(
+                      color: Colors.transparent,
+                      child: InkWell(
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isToday
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.outlineVariant,
-                          width: isToday ? 1.6 : 1,
-                        ),
-                        color: isToday
-                            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.35)
-                            : theme.colorScheme.surface,
-                      ),
-                      padding: const EdgeInsets.all(8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '$dayNumber',
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              fontWeight: FontWeight.w700,
+                        onTap: () => widget.onDaySelected(dayDate),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSelected || isToday
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.outlineVariant,
+                              width: isSelected || isToday ? 1.6 : 1,
                             ),
+                            color: isSelected
+                                ? theme.colorScheme.secondaryContainer
+                                : isToday
+                                    ? theme.colorScheme.primaryContainer.withValues(alpha: 0.35)
+                                    : theme.colorScheme.surface,
                           ),
-                          const SizedBox(height: 6),
-                          if (jobs.isEmpty)
-                            const Spacer()
-                          else
-                            Expanded(
-                              child: SingleChildScrollView(
-                                child: Wrap(
-                                  spacing: 4,
-                                  runSpacing: 4,
-                                  children: jobs
-                                      .map(
-                                        (job) => Chip(
-                                          materialTapTargetSize:
-                                              MaterialTapTargetSize.shrinkWrap,
-                                          labelPadding:
-                                              const EdgeInsets.symmetric(horizontal: 6),
-                                          visualDensity: VisualDensity.compact,
-                                          label: Text(
-                                            job,
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                          ),
-                                        ),
-                                      )
-                                      .toList(),
+                          padding: const EdgeInsets.all(8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '$dayNumber',
+                                style: theme.textTheme.labelLarge?.copyWith(
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
-                            ),
-                        ],
+                              const SizedBox(height: 6),
+                              if (jobs.isEmpty)
+                                const Spacer()
+                              else
+                                Expanded(
+                                  child: SingleChildScrollView(
+                                    child: Wrap(
+                                      spacing: 4,
+                                      runSpacing: 4,
+                                      children: jobs
+                                          .map(
+                                            (job) => ActionChip(
+                                              materialTapTargetSize:
+                                                  MaterialTapTargetSize.shrinkWrap,
+                                              labelPadding:
+                                                  const EdgeInsets.symmetric(horizontal: 6),
+                                              visualDensity: VisualDensity.compact,
+                                              onPressed: () => _openJobDetails(
+                                                context,
+                                                job,
+                                              ),
+                                              label: Text(
+                                                job.jobName,
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
+                                              ),
+                                            ),
+                                          )
+                                          .toList(),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
                       ),
                     );
                   },
@@ -379,10 +484,26 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
 
     return names[month - 1];
   }
+
+  bool _isSameDate(DateTime left, DateTime right) {
+    return left.year == right.year &&
+        left.month == right.month &&
+        left.day == right.day;
+  }
+
+  bool _isSameMonth(DateTime left, DateTime right) {
+    return left.year == right.year && left.month == right.month;
+  }
 }
 
 class _WeekCalendarView extends StatefulWidget {
-  const _WeekCalendarView();
+  const _WeekCalendarView({
+    required this.selectedDay,
+    required this.onDaySelected,
+  });
+
+  final DateTime selectedDay;
+  final ValueChanged<DateTime> onDaySelected;
 
   @override
   State<_WeekCalendarView> createState() => _WeekCalendarViewState();
@@ -391,21 +512,19 @@ class _WeekCalendarView extends StatefulWidget {
 class _WeekCalendarViewState extends State<_WeekCalendarView> {
   late DateTime _weekStart;
 
-  static const Map<int, List<String>> _jobsByWeekday = {
-    1: ['Morning Standup', 'Temple Demo'],
-    2: ['Permit Follow-up', 'Crew A Dispatch'],
-    3: ['Inspection Prep'],
-    4: ['Client Update Call', 'Procurement Pickup'],
-    5: ['Field Install Team B'],
-    6: ['Closeout Docs'],
-    7: ['On-call Window'],
-  };
-
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
-    _weekStart = now.subtract(Duration(days: now.weekday % 7));
+    _weekStart = _startOfWeek(widget.selectedDay);
+  }
+
+  @override
+  void didUpdateWidget(covariant _WeekCalendarView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (!_isSameDate(oldWidget.selectedDay, widget.selectedDay)) {
+      _weekStart = _startOfWeek(widget.selectedDay);
+    }
   }
 
   void _changeWeek(int deltaWeeks) {
@@ -461,59 +580,70 @@ class _WeekCalendarViewState extends State<_WeekCalendarView> {
                 const SizedBox(height: 16),
                 ...weekDays.map(
                   (day) {
-                    final weekday = day.weekday == 7 ? 7 : day.weekday;
-                    final jobs = _jobsByWeekday[weekday] ?? const <String>[];
+                    final jobs = _scheduledJobsForDate(day);
                     final isToday =
                         day.year == now.year && day.month == now.month && day.day == now.day;
+                    final isSelected = _isSameDate(day, widget.selectedDay);
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
+                    return Material(
+                      color: Colors.transparent,
+                      child: InkWell(
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isToday
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.outlineVariant,
-                          width: isToday ? 1.6 : 1,
-                        ),
-                        color: isToday
-                            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
-                            : theme.colorScheme.surface,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${_weekdayName(day.weekday)} ${_monthShort(day.month)} ${day.day}',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
+                        onTap: () => widget.onDaySelected(day),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSelected || isToday
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.outlineVariant,
+                              width: isSelected || isToday ? 1.6 : 1,
                             ),
+                            color: isSelected
+                                ? theme.colorScheme.secondaryContainer
+                                : isToday
+                                    ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
+                                    : theme.colorScheme.surface,
                           ),
-                          const SizedBox(height: 8),
-                          if (jobs.isEmpty)
-                            Text(
-                              'No scheduled jobs',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${_weekdayName(day.weekday)} ${_monthShort(day.month)} ${day.day}',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
-                            )
-                          else
-                            Wrap(
-                              spacing: 6,
-                              runSpacing: 6,
-                              children: jobs
-                                  .map(
-                                    (job) => Chip(
-                                      materialTapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                      visualDensity: VisualDensity.compact,
-                                      label: Text(job),
-                                    ),
-                                  )
-                                  .toList(),
-                            ),
-                        ],
+                              const SizedBox(height: 8),
+                              if (jobs.isEmpty)
+                                Text(
+                                  'No scheduled jobs',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                )
+                              else
+                                Wrap(
+                                  spacing: 6,
+                                  runSpacing: 6,
+                                  children: jobs
+                                      .map(
+                                        (job) => ActionChip(
+                                          materialTapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                          visualDensity: VisualDensity.compact,
+                                          onPressed: () =>
+                                              _openJobDetails(context, job),
+                                          label: Text(job.jobName),
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
+                            ],
+                          ),
+                        ),
                       ),
                     );
                   },
@@ -558,6 +688,91 @@ class _WeekCalendarViewState extends State<_WeekCalendarView> {
 
     return names[weekday - 1];
   }
+
+  bool _isSameDate(DateTime left, DateTime right) {
+    return left.year == right.year &&
+        left.month == right.month &&
+        left.day == right.day;
+  }
+}
+
+class _DayCalendarView extends StatefulWidget {
+  const _DayCalendarView({
+    required this.selectedDay,
+    required this.onChangeDay,
+  });
+
+  final DateTime selectedDay;
+  final ValueChanged<int> onChangeDay;
+
+  @override
+  State<_DayCalendarView> createState() => _DayCalendarViewState();
+}
+
+class _DayCalendarViewState extends State<_DayCalendarView> {
+  String _titleForDay(DateTime day) {
+    return '${_weekdayName(day.weekday)}, ${_monthShort(day.month)} ${day.day}, ${day.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: CardDisplayArea(
+        title: _titleForDay(widget.selectedDay),
+        jobs: _scheduledJobsForDate(widget.selectedDay),
+        maxVisibleItems: 4,
+        actions: [
+          IconButton(
+            onPressed: () => widget.onChangeDay(-1),
+            tooltip: 'Previous day',
+            icon: const Icon(Icons.chevron_left),
+          ),
+          IconButton(
+            onPressed: () => widget.onChangeDay(1),
+            tooltip: 'Next day',
+            icon: const Icon(Icons.chevron_right),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _monthShort(int month) {
+    const names = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
+    return names[month - 1];
+  }
+
+  String _weekdayName(int weekday) {
+    const names = [
+      'Mon',
+      'Tue',
+      'Wed',
+      'Thu',
+      'Fri',
+      'Sat',
+      'Sun',
+    ];
+
+    return names[weekday - 1];
+  }
+}
+
+void _openJobDetails(BuildContext context, Job job) {
+  Navigator.of(context).pushNamed(AppRouter.jobDetails, arguments: job.id);
 }
 
 class _CalendarViewData {

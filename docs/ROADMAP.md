@@ -38,8 +38,8 @@ Goal: Full job info displayed
 Goal: Real data
 
 * [ ] Setup backend (Supabase likely)
-* [ ] Create core tables from `DATABASE_SCHEMA.md`
-* [ ] Create read views: `job_list_view`, `job_details_view`, `job_all_contacts_view`, `job_user_calendar_view`
+* [ ] Create or verify core tables from `supabase-schema-sql.txt`
+* [ ] Decide whether Flutter will read base tables directly or whether targeted views/RPCs are worth adding
 * [ ] Add auth mapping and RLS policies
 * [ ] Connect Flutter app
 

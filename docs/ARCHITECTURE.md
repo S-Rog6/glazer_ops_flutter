@@ -63,33 +63,31 @@ Database (Postgres)
 
 ### Source-of-Truth Tables
 
-* `profiles` (`auth.users` companion)
+* `profiles`
 * `sites`
 * `jobs`
-* `schedule`
 * `site_contacts`
 * `job_contacts`
 * `job_assignments`
 * `notes`
 * `user_pinned_jobs`
+* `user_settings`
 
-### Read-Focused Views
+### Current Backend Shape
 
-* `job_list_view`
-* `job_details_view`
-* `job_all_contacts_view`
-* `job_user_calendar_view`
+* The current export is table-only. No read views are defined yet.
+* Job date windows live on `jobs.start_date` and `jobs.end_date`.
+* Per-user daily staffing lives in `job_assignments.work_date`.
+* `user_settings` is a real table in the current schema, not just a future note.
 
 ### Important Modeling Calls
 
-* Backend views should provide ready-to-display data.
-* UI should not perform heavy joins.
-* The `schedule` table holds one row per scheduled date or date range for a job (one job → many schedule rows).
-  Per-user, per-day staffing lives in `job_assignments`.
-* Site contacts stay normalized at the site level.
-  The UI gets the combined list through `job_all_contacts_view`.
+* The current schema is slimmer than the earlier design notes.
+* If backend views are added later, treat them as optional read helpers rather than current dependencies.
+* Site contacts stay normalized at the site level; job-specific contacts live in `job_contacts`.
+* The app still carries richer location fields in mock models than the exported `sites` table currently stores.
 
-Full table and view definitions live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
+Full current schema details live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
 
 ---
 

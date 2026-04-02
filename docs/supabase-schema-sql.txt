@@ -6,10 +6,6 @@ CREATE TABLE public.job_assignments (
   job_id uuid NOT NULL,
   user_id uuid NOT NULL,
   work_date date NOT NULL,
-  status text NOT NULL DEFAULT 'Assigned'::text CHECK (status = ANY (ARRAY['Assigned'::text, 'Confirmed'::text, 'Completed'::text, 'Cancelled'::text])),
-  role text,
-  notes text,
-  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
   CONSTRAINT job_assignments_pkey PRIMARY KEY (id),
   CONSTRAINT job_assignments_job_id_fkey FOREIGN KEY (job_id) REFERENCES public.jobs(id),
   CONSTRAINT job_assignments_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
@@ -61,8 +57,7 @@ CREATE TABLE public.profiles (
   is_active boolean NOT NULL DEFAULT true,
   created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
   updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
-  CONSTRAINT profiles_pkey PRIMARY KEY (id),
-  CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
+  CONSTRAINT profiles_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.site_contacts (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -72,9 +67,6 @@ CREATE TABLE public.site_contacts (
   phone text,
   email text,
   is_primary boolean NOT NULL DEFAULT false,
-  sort_order integer NOT NULL DEFAULT 0,
-  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
-  updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
   CONSTRAINT site_contacts_pkey PRIMARY KEY (id),
   CONSTRAINT site_contacts_site_id_fkey FOREIGN KEY (site_id) REFERENCES public.sites(id)
 );
@@ -83,21 +75,25 @@ CREATE TABLE public.sites (
   name text NOT NULL,
   address_line_1 text NOT NULL,
   address_line_2 text,
-  city text NOT NULL,
-  state text NOT NULL,
-  postal_code text,
-  latitude numeric,
-  longitude numeric,
   notes text,
-  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
   updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
   CONSTRAINT sites_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.user_pinned_jobs (
   user_id uuid NOT NULL,
   job_id uuid NOT NULL,
-  pinned_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
   CONSTRAINT user_pinned_jobs_pkey PRIMARY KEY (user_id, job_id),
   CONSTRAINT user_pinned_jobs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id),
   CONSTRAINT user_pinned_jobs_job_id_fkey FOREIGN KEY (job_id) REFERENCES public.jobs(id)
+);
+CREATE TABLE public.user_settings (
+  user_id uuid NOT NULL,
+  card_actions_side text NOT NULL DEFAULT 'right'::text CHECK (card_actions_side = ANY (ARRAY['left'::text, 'right'::text])),
+  zoom numeric NOT NULL DEFAULT 1.00 CHECK (zoom >= 0.50 AND zoom <= 2.00),
+  schedule_view text NOT NULL DEFAULT 'month'::text CHECK (schedule_view = ANY (ARRAY['month'::text, 'week'::text, 'day'::text])),
+  calculator_enabled boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT user_settings_pkey PRIMARY KEY (user_id),
+  CONSTRAINT user_settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
 );

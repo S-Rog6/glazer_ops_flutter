@@ -1,10 +1,12 @@
 -- =============================================================
 -- GlazerOps Demo Seed Data
 -- =============================================================
--- NOTE: profiles.id must match real Supabase auth.users IDs.
--- Replace the UUIDs in the profiles section with actual user
--- IDs from your Supabase Auth dashboard, OR create the auth
--- users first via Supabase and update these values accordingly.
+-- NOTE: The current exported schema does not enforce a foreign key
+-- from public.profiles(id) to auth.users(id).
+-- If you want profile rows to line up with real Supabase users,
+-- replace the UUIDs in the profiles section with auth.users IDs.
+-- If you are only seeding the current schema snapshot, these UUIDs
+-- can stay as-is.
 --
 -- All other UUIDs are fixed so foreign keys resolve correctly.
 -- Run this against your Supabase project using the SQL editor.
@@ -13,49 +15,41 @@
 -- ---------------------------------------------------------------
 -- SITES
 -- ---------------------------------------------------------------
-INSERT INTO public.sites (id, name, address_line_1, address_line_2, city, state, postal_code, latitude, longitude, notes)
+INSERT INTO public.sites (id, name, address_line_1, address_line_2, notes)
 VALUES
   (
     'a1000000-0000-0000-0000-000000000001',
     'Downtown Office Tower',
     '123 N Michigan Ave',
-    'Suite 100',
-    'Chicago', 'IL', '60601',
-    41.8858, -87.6244,
+    'Suite 100, Chicago, IL 60601',
     'High-rise; badge required for upper floors. Contact security 30 min before arrival.'
   ),
   (
     'a1000000-0000-0000-0000-000000000002',
     'Riverside Medical Center',
     '450 River Rd',
-    NULL,
-    'Chicago', 'IL', '60607',
-    41.8731, -87.6562,
+    'Chicago, IL 60607',
     'Hospital campus. Use delivery entrance on south side. No noise after 8 PM.'
   ),
   (
     'a1000000-0000-0000-0000-000000000003',
     'Westfield Shopping Mall',
     '789 Commerce Blvd',
-    NULL,
-    'Naperville', 'IL', '60540',
-    41.7508, -88.1535,
+    'Naperville, IL 60540',
     'Exterior work must be done before mall open (before 9 AM) or after close (after 9 PM).'
   ),
   (
     'a1000000-0000-0000-0000-000000000004',
     'Lincoln Park Apartments',
     '2200 N Lincoln Ave',
-    NULL,
-    'Chicago', 'IL', '60614',
-    41.9225, -87.6459,
+    'Chicago, IL 60614',
     'Residential building. Residents require 24 hr notice for unit access.'
   );
 
 -- ---------------------------------------------------------------
 -- SITE CONTACTS
 -- ---------------------------------------------------------------
-INSERT INTO public.site_contacts (id, site_id, name, role, phone, email, is_primary, sort_order)
+INSERT INTO public.site_contacts (id, site_id, name, role, phone, email, is_primary)
 VALUES
   -- Downtown Office Tower
   (
@@ -63,14 +57,14 @@ VALUES
     'a1000000-0000-0000-0000-000000000001',
     'Larry Hennessy', 'Facilities Manager',
     '312-555-0101', 'l.hennessy@downtowntower.com',
-    true, 0
+    true
   ),
   (
     'b1000000-0000-0000-0000-000000000002',
     'a1000000-0000-0000-0000-000000000001',
     'Carol Vance', 'Security Desk',
     '312-555-0102', NULL,
-    false, 1
+    false
   ),
   -- Riverside Medical Center
   (
@@ -78,7 +72,7 @@ VALUES
     'a1000000-0000-0000-0000-000000000002',
     'Marcus Webb', 'Plant Operations',
     '312-555-0201', 'm.webb@riversidemedical.org',
-    true, 0
+    true
   ),
   -- Westfield Shopping Mall
   (
@@ -86,14 +80,14 @@ VALUES
     'a1000000-0000-0000-0000-000000000003',
     'Diane Torres', 'Mall Operations',
     '630-555-0301', 'dtorres@westfieldmall.com',
-    true, 0
+    true
   ),
   (
     'b1000000-0000-0000-0000-000000000005',
     'a1000000-0000-0000-0000-000000000003',
     'Pete Olson', 'Maintenance Supervisor',
     '630-555-0302', NULL,
-    false, 1
+    false
   ),
   -- Lincoln Park Apartments
   (
@@ -101,7 +95,7 @@ VALUES
     'a1000000-0000-0000-0000-000000000004',
     'Sandra Kim', 'Property Manager',
     '773-555-0401', 's.kim@lpkapts.com',
-    true, 0
+    true
   );
 
 -- ---------------------------------------------------------------
@@ -265,6 +259,16 @@ VALUES
     '312-555-1004',
     true
   );
+
+-- ---------------------------------------------------------------
+-- USER SETTINGS
+-- ---------------------------------------------------------------
+INSERT INTO public.user_settings (user_id, card_actions_side, zoom, schedule_view, calculator_enabled)
+VALUES
+  ('e1000000-0000-0000-0000-000000000001', 'right', 1.00, 'month', true),
+  ('e1000000-0000-0000-0000-000000000002', 'right', 1.00, 'week', true),
+  ('e1000000-0000-0000-0000-000000000003', 'left', 1.10, 'day', true),
+  ('e1000000-0000-0000-0000-000000000004', 'right', 0.90, 'month', false);
 
 -- ---------------------------------------------------------------
 -- JOB ASSIGNMENTS
