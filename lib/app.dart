@@ -9,6 +9,7 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'features/jobs/controllers/jobs_controller.dart';
 import 'features/jobs/data/jobs_repository.dart';
+import 'features/jobs/data/mock_jobs_repository.dart';
 import 'features/jobs/data/supabase_jobs_repository.dart';
 import 'features/jobs/data/unavailable_jobs_repository.dart';
 import 'routes/app_router.dart';
@@ -30,9 +31,12 @@ class _GlazerOpsAppState extends State<GlazerOpsApp> {
   void initState() {
     super.initState();
     _themeController = ThemeController();
-    _jobsRepository = SupabaseBootstrap.state.isReady
+    final bootstrapState = SupabaseBootstrap.state;
+    _jobsRepository = bootstrapState.isReady
         ? SupabaseJobsRepository(Supabase.instance.client)
-        : UnavailableJobsRepository(SupabaseBootstrap.state);
+        : bootstrapState.isConfigured
+        ? UnavailableJobsRepository(bootstrapState)
+        : const MockJobsRepository();
     _jobsController = JobsController(
       repository: _jobsRepository,
       activeUserId: _resolveActiveUserId(),

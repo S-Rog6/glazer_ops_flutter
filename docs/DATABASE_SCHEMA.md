@@ -54,9 +54,78 @@ database changes, update those source artifacts first and then sync this file.
 
 ---
 
+<<<<<<< ours
 ## Table Details
 
 ### `sites`
+=======
+## Example Seed Inserts (one row per table)
+
+This script covers every table defined in the SQL section above (`profiles`, `sites`, `jobs`, `site_contacts`, `job_contacts`, `job_assignments`, `notes`, `user_pinned_jobs`).
+
+```sql
+-- Create one auth user in Supabase Auth first (Dashboard/Auth API).
+-- Then use that UUID for profiles.id in the script below.
+
+do $$
+declare
+  v_profile_id uuid := '11111111-1111-1111-1111-111111111111'; -- existing auth.users.id
+  v_site_id uuid := gen_random_uuid();
+  v_job_id uuid := gen_random_uuid();
+begin
+  insert into public.profiles (id, full_name, phone)
+  values (v_profile_id, 'Alex Foreman', '555-0100')
+  on conflict (id) do nothing;
+
+  insert into public.sites (
+    id, name, address_line_1, city, state, postal_code, latitude, longitude, notes
+  )
+  values (
+    v_site_id, 'North Plant', '123 Main St', 'Phoenix', 'AZ', '85001', 33.448376, -112.074036, 'Primary facility'
+  );
+
+  insert into public.jobs (
+    id, site_id, job_name, po_number, status, start_date, end_date, description
+  )
+  values (
+    v_job_id, v_site_id, 'Boiler Retrofit', 'PO-2026-0042', 'Scheduled', date '2026-04-01', date '2026-04-05', 'Replace expansion valves'
+  );
+
+  insert into public.site_contacts (site_id, name, role, phone, email, is_primary, sort_order)
+  values (v_site_id, 'Jamie SiteMgr', 'Site Manager', '555-0111', 'jamie@example.com', true, 0);
+
+  insert into public.job_contacts (job_id, name, role, phone, email, is_primary, sort_order)
+  values (v_job_id, 'Pat Inspector', 'Inspector', '555-0222', 'pat@example.com', true, 0);
+
+  insert into public.job_assignments (job_id, user_id, work_date, status, role, notes)
+  values (v_job_id, v_profile_id, date '2026-04-01', 'Assigned', 'Lead Tech', 'Bring lockout kit');
+
+  insert into public.notes (job_id, author_user_id, content)
+  values (v_job_id, v_profile_id, 'Initial walkthrough complete.');
+
+  insert into public.user_pinned_jobs (user_id, job_id)
+  values (v_profile_id, v_job_id)
+  on conflict do nothing;
+
+end
+$$;
+```
+
+---
+
+## Why This Schema
+
+### Data entry order (important for forms)
+
+* Yes: create/select a **site first**, then create the job.
+* `jobs.site_id` is `not null` and references `sites(id)`, so a job cannot exist without a parent site.
+* Practical UI flow:
+  1. Create or select site.
+  2. Create job under that site.
+  3. Add job-level contacts, assignments, and notes.
+
+### `sites` + `jobs`
+>>>>>>> theirs
 
 Columns:
 
