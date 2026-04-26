@@ -33,7 +33,7 @@ flutter analyze
 ## First Targets
 
 * Keep the app booting through centralized routes
-* Build a clickable jobs flow backed by Supabase
+* Complete operational flows (auth and write actions)
 * Replace placeholder pages with real feature UI
 
 ---
@@ -42,10 +42,17 @@ flutter analyze
 
 Start simple:
 
-* Hardcode data first
-* No API calls yet
 * Keep business logic out of UI widgets
-* When backend work starts, treat `supabase-schema-sql.txt` as the exact DDL source and `DATABASE_SCHEMA.md` as the readable summary
+* Maintain repository boundaries for data access
+* Prefer schema-first updates when adding write flows
+* Treat docs/supabase-schema-sql.txt as DDL source and docs/DATABASE_SCHEMA.md as readable reference
+
+Current implementation reality:
+
+* Supabase read integration is already live for jobs and job details
+* Settings contains live connection diagnostics and refresh actions
+* Auth UI exists but is still placeholder and currently bypassed
+* Notes and contacts pages still require full data-backed implementations
 
 ---
 
@@ -67,18 +74,18 @@ The app also accepts these existing Next-style names:
 Example:
 
 ```bash
-flutter run `
-  --dart-define=SUPABASE_URL=https://YOUR_PROJECT.supabase.co `
-  --dart-define=SUPABASE_ANON_KEY=YOUR_ANON_KEY `
+flutter run \
+  --dart-define=SUPABASE_URL=https://YOUR_PROJECT.supabase.co \
+  --dart-define=SUPABASE_ANON_KEY=YOUR_ANON_KEY \
   --dart-define=SUPABASE_PROFILE_ID=YOUR_PROFILES_ID
 ```
 
 Equivalent with `NEXT_PUBLIC_*` names:
 
 ```bash
-flutter run `
-  --dart-define=NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co `
-  --dart-define=NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=YOUR_PUBLISHABLE_KEY `
+flutter run \
+  --dart-define=NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co \
+  --dart-define=NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=YOUR_PUBLISHABLE_KEY \
   --dart-define=NEXT_PUBLIC_SUPABASE_PROFILE_ID=YOUR_PROFILES_ID
 ```
 
@@ -90,6 +97,25 @@ Notes:
 * The current details UI was aligned to the actual schema, which stores address data as `address_line_1` and `address_line_2`
 * `job_assignments` in the current schema does not include assignment role/status fields, so the UI derives a simple display status from the parent job status
 * Auth login is still placeholder UI; until end-to-end auth is wired, `SUPABASE_PROFILE_ID` remains the safest way to align user-scoped reads with `profiles.id`
+
+## Operational Completion Plan
+
+Use this sequence to reach external-testing readiness:
+
+1. Implement invite-only session-based auth flow (remove splash bypass, wire login/logout, no self-signup)
+2. Add write methods and UI for job create and job edit
+3. Replace job details quick action stubs with real notes, pin, and assignment actions
+4. Replace notes and contacts placeholders with repository-backed pages
+5. Implement attachments upload and gallery view
+6. Add test coverage for controller and repository critical paths
+7. Run final cross-platform smoke pass and freeze beta scope
+
+Definition of done before external testers:
+
+* No placeholder pages or coming-soon actions on primary flows
+* Authenticated user can complete end-to-end daily workflow
+* Core errors surface clear, actionable UI feedback
+* Analyze and tests pass on CI and local development machine
 
 ### Connection Diagnostics
 
@@ -132,4 +158,4 @@ If something breaks:
 
 ## Goal
 
-Get to a clickable prototype ASAP.
+Ship an operational beta that is safe to test with real users.

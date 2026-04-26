@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../core/supabase/supabase_bootstrap.dart';
 import '../core/widgets/app_shell.dart';
 import '../features/dashboard/dashboard_page.dart';
 import '../features/jobs/jobs_page.dart';
@@ -96,20 +99,23 @@ class AppRouter {
         );
       case login:
         return MaterialPageRoute(
-          builder: (_) => const LoginPage(),
+          settings: routeSettings,
+          builder: (_) => LoginPage(
+            initialMessage: routeSettings.arguments as String?,
+          ),
         );
       case dashboard:
-        return MaterialPageRoute(
+        return _requireAuthRoute(
           settings: routeSettings,
-          builder: (_) => const AppShell(
+          routeBuilder: (_) => const AppShell(
             currentRoute: dashboard,
             body: DashboardPage(),
           ),
         );
       case jobs:
-        return MaterialPageRoute(
+        return _requireAuthRoute(
           settings: routeSettings,
-          builder: (_) => const AppShell(
+          routeBuilder: (_) => const AppShell(
             currentRoute: jobs,
             body: JobsPage(),
           ),
@@ -121,38 +127,38 @@ class AppRouter {
           return _errorRoute('A job ID is required to open job details.');
         }
 
-        return MaterialPageRoute(
+        return _requireAuthRoute(
           settings: routeSettings,
-          builder: (_) => JobDetailsPage(jobId: jobId),
+          routeBuilder: (_) => JobDetailsPage(jobId: jobId),
         );
       case schedule:
-        return MaterialPageRoute(
+        return _requireAuthRoute(
           settings: routeSettings,
-          builder: (_) => const AppShell(
+          routeBuilder: (_) => const AppShell(
             currentRoute: schedule,
             body: SchedulePage(),
           ),
         );
       case contacts:
-        return MaterialPageRoute(
+        return _requireAuthRoute(
           settings: routeSettings,
-          builder: (_) => const AppShell(
+          routeBuilder: (_) => const AppShell(
             currentRoute: contacts,
             body: OrganizationPage(),
           ),
         );
       case notes:
-        return MaterialPageRoute(
+        return _requireAuthRoute(
           settings: routeSettings,
-          builder: (_) => const AppShell(
+          routeBuilder: (_) => const AppShell(
             currentRoute: notes,
             body: NotesPage(),
           ),
         );
       case settings:
-        return MaterialPageRoute(
+        return _requireAuthRoute(
           settings: routeSettings,
-          builder: (_) => const AppShell(
+          routeBuilder: (_) => const AppShell(
             currentRoute: settings,
             body: SettingsPage(),
           ),
@@ -170,5 +176,38 @@ class AppRouter {
         ),
       ),
     );
+  }
+
+  static Route<dynamic> _requireAuthRoute({
+    required RouteSettings settings,
+    required WidgetBuilder routeBuilder,
+  }) {
+    if (_isAuthenticated()) {
+      return MaterialPageRoute(
+        settings: settings,
+        builder: routeBuilder,
+      );
+    }
+
+    final message = SupabaseBootstrap.state.isReady
+        ? 'Please sign in with an invited account to continue.'
+        : 'Authentication is unavailable. Check Supabase configuration and try again.';
+
+    return MaterialPageRoute(
+      settings: const RouteSettings(name: login),
+      builder: (_) => LoginPage(initialMessage: message),
+    );
+  }
+
+  static bool _isAuthenticated() {
+    if (!SupabaseBootstrap.state.isReady) {
+      return false;
+    }
+
+    try {
+      return Supabase.instance.client.auth.currentSession != null;
+    } catch (_) {
+      return false;
+    }
   }
 }

@@ -1,75 +1,79 @@
 # Roadmap
 
-## Phase 1 – UI Foundation
+## Objective
 
-Goal: App runs and navigation works
+Reach a fully operational beta build before external testing.
 
-* [x] Setup routing
-* [x] Bottom navigation / sidebar
-* [x] Theme (dark + light)
-* [x] Base layout components
+## Phase 1 - Foundation (Complete)
 
----
+Goal: app boots, routes, and renders core navigation shell.
 
-## Phase 2 – Jobs Flow
-
-Goal: You can view and open jobs
-
-* [x] Jobs List page
-* [x] Job Card UI
-* [x] Job Details page
-* [ ] Static/mock data
+* [x] Centralized route generation
+* [x] App shell with primary navigation
+* [x] Theme foundation
+* [x] Shared layout and reusable UI primitives
 
 ---
 
-## Phase 3 – Job Details
+## Phase 2 - Read-Only Core Flows (Mostly Complete)
 
-Goal: Full job info displayed
+Goal: users can browse jobs and view details.
 
-* [ ] Contacts section
-* [ ] Schedule / crew section
-* [ ] Notes section
-* [ ] Attachments placeholder (backend deferred)
-
----
-
-## Phase 4 – Backend Integration
-
-Goal: Real data
-
-* [ ] Setup backend (Supabase likely)
-* [ ] Create or verify core tables from `supabase-schema-sql.txt`
-* [ ] Decide whether Flutter will read base tables directly or whether targeted views/RPCs are worth adding
-* [ ] Add auth mapping and RLS policies
-* [ ] Connect Flutter app
+* [x] Jobs list and card display
+* [x] Job details page structure
+* [x] Dashboard wiring to jobs data
+* [x] Supabase bootstrap and live read integration
+* [ ] Eliminate remaining placeholder actions in job details
 
 ---
 
-## Phase 5 – Offline Support
+## Phase 3 - Operational Flows (Current Priority)
 
-Goal: Works without internet
+Goal: remove blockers so the app is usable for real work.
 
-* [ ] Local storage
-* [ ] Sync logic
-* [ ] Conflict handling (basic)
+* [ ] Invite-only auth flow end-to-end (session-aware splash, login, logout, no public signup)
+* [ ] Job create and edit flow
+* [ ] Notes create/update flow from job details
+* [ ] Crew assignment create/update flow
+* [ ] Contacts feature backed by real data
+* [ ] Attachments upload and display
 
 ---
 
-## Phase 6 – Polish
+## Phase 4 - Schedule and Reliability
 
-* [ ] UX improvements
-* [ ] Performance tuning
-* [ ] Error handling
-* [ ] Logging
+Goal: improve planning workflows and runtime confidence.
+
+* [ ] Complete day/week/month schedule interactions for operations use
+* [ ] Add robust empty/loading/error states across all primary pages
+* [ ] Add offline strategy (cache plus deferred sync) or explicitly defer with UX messaging
+
+---
+
+## Phase 5 - Quality Gate Before External Testing
+
+Goal: freeze a stable beta candidate.
+
+* [ ] Unit tests for controller and repository critical paths
+* [ ] Integration smoke checks for login, jobs read/write, and notes flow
+* [ ] Manual test checklist for Android, iOS, and Web
+* [ ] Performance pass for jobs list and job details
+* [ ] Documentation and release notes update
+
+---
+
+## Priority Order
+
+1. Auth completion
+2. Job write flows
+3. Notes and crew updates
+4. Contacts completion
+5. Attachments flow
+6. Schedule completion
+7. Test coverage and release hardening
 
 ---
 
 ## Reality Check
 
-If it’s not usable by:
-
-* a guy on a jobsite
-* with dirty hands
-* in under 10 seconds
-
-…it’s wrong.
+If it is not usable in the field within 10 seconds of opening the app, it is not ready.

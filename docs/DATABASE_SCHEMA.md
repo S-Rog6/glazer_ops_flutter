@@ -152,6 +152,7 @@ Columns:
 Columns:
 
 * `id uuid primary key`
+* `email text not null unique`
 * `full_name text not null`
 * `phone text`
 * `avatar_url text`
@@ -161,8 +162,10 @@ Columns:
 
 Notes:
 
-* The current export does not declare a foreign key from `profiles.id` to `auth.users(id)`.
-* If you want a strict auth-to-profile linkage, that needs to be added explicitly in future SQL.
+* `profiles.id` must match the corresponding `auth.users(id)` for the same user.
+* `profiles.email` must match the `auth.users.email` for the same user and is the primary invite gate.
+* `is_active = false` disables access without deleting the account.
+* A profile row must exist and be active for any login method (email/password or Google) to succeed.
 
 ### `user_pinned_jobs`
 

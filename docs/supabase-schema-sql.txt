@@ -51,13 +51,15 @@ CREATE TABLE public.notes (
 );
 CREATE TABLE public.profiles (
   id uuid NOT NULL,
+  email text NOT NULL,
   full_name text NOT NULL,
   phone text,
   avatar_url text,
   is_active boolean NOT NULL DEFAULT true,
   created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
   updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
-  CONSTRAINT profiles_pkey PRIMARY KEY (id)
+  CONSTRAINT profiles_pkey PRIMARY KEY (id),
+  CONSTRAINT profiles_email_key UNIQUE (email)
 );
 CREATE TABLE public.site_contacts (
   id uuid NOT NULL DEFAULT gen_random_uuid(),

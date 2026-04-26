@@ -1,102 +1,77 @@
-# GlazerOps (Working Name)
+# GlazerOps
 
-A cross-platform app for managing commercial glazing jobs, built with **Flutter (frontend)** and a lightweight backend (TBD).
+Cross-platform operations app for commercial glazing teams, built with Flutter and Supabase.
 
 ## Goal
 
-Make jobsite tracking dead simple:
+Deliver a field-usable app for:
 
 * Jobs
 * Sites
 * Contacts
-* Schedules
+* Scheduling
 * Notes
 * Attachments
 
-No fluff. Fast. Usable in the field.
-
----
-
-## Tech Stack (Current Plan)
+## Current Stack
 
 * Frontend: Flutter (Android, iOS, Web, Desktop)
-* Backend: TBD (likely Supabase or similar)
-* Database: PostgreSQL (via backend)
-* Hosting: Web + PWA first
+* Backend: Supabase
+* Database: PostgreSQL (Supabase)
 
----
+## Current Product State
 
-## Project Structure
+Working now:
 
-/glazerops
-  /app              -> Flutter app
-  /docs             -> Planning + architecture + database schema
-  /backend          -> (future backend code)
+* App shell, routing, and navigation
+* Dashboard and jobs list
+* Job details read flow from Supabase
+* Settings diagnostics (connection test and refresh)
+* Graceful startup and repository error handling
 
----
+Not complete yet:
 
-## Current Status
+* Real auth flow (login is still placeholder/bypassed)
+* Invite-only onboarding flow is not implemented end-to-end yet
+* Create/edit write flows for core entities
+* Fully implemented contacts and notes feature pages
+* Attachments upload flow
+* Automated tests
 
-Phase 1: Setup + UI foundation
+## Operational Readiness Plan
 
-* [x] Flutter project created
-* [x] Navigation structure
-* [x] Base layout (tabs/pages)
-* [x] Theme system
+This is the plan to complete before external user testing:
 
----
+1. Implement invite-only auth end-to-end (session gating, login, logout, no public signup)
+2. Implement job create and edit flows
+3. Implement notes create/read/update flow from job details
+4. Implement crew assignment create/update flow
+5. Complete contacts feature with real data
+6. Complete schedule interactions for day/week/month operations
+7. Implement attachments upload and display
+8. Add minimal regression test suite for critical flows
+9. Run app hardening pass (error handling, empty states, loading states)
+10. Freeze beta scope and publish tester checklist
 
-## Core Pages (Planned)
+## Getting Started
 
-* Dashboard
-* Jobs List
-* Job Details
-* Notes
-* Schedule
-* Settings
+1. Install Flutter SDK for your platform
+2. Run:
 
----
+```bash
+flutter pub get
+flutter analyze
+flutter run
+```
 
-## Design Philosophy
+3. For live data, pass Supabase defines (see docs/app_README.md)
 
-* Fast > Fancy
-* Simple > Clever
-* Field-friendly (big buttons, minimal typing)
+## Documentation Map
 
----
-
-## Next Steps
-
-1. Build basic navigation
-2. Create Jobs List page
-3. Create Job Details layout (static first)
-4. Wire up fake/mock data
-
----
-
-## Rules (Don’t Ignore These)
-
-* No overengineering early
-* No backend until UI flow makes sense
-* Every page must be usable before moving on
-
----
-
-## Notes
-
-This is being built iteratively. Expect changes.
-
-Keep everything modular so we don’t regret decisions later.
-Backend schema planning now lives in `docs/DATABASE_SCHEMA.md`.
-
----
-
-## Version Control
-
-Git workflow and conventions are documented in `docs/VERSION_CONTROL.md`.
-
-Quick start:
-
-1. Create branches from `main` using `feature/*`, `fix/*`, or `chore/*`
-2. Use Conventional Commit messages (`feat: ...`, `fix: ...`, etc.)
-3. Run `flutter analyze` and `flutter test` before opening a PR
+* docs/app_README.md: runtime setup and app behavior
+* docs/AUTH_POLICY.md: invite-only auth and onboarding rules
+* docs/IMPLEMENTATION_PLAN.md: tracked checklist for operational beta readiness
+* docs/ROADMAP.md: implementation phases and priorities
+* docs/ARCHITECTURE.md: app layers and data architecture
+* docs/DATABASE_SCHEMA.md: schema reference
+* docs/VERSION_CONTROL.md: git workflow

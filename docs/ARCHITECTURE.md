@@ -4,11 +4,11 @@
 
 UI (Flutter)
    ↓
-State Management
+Controller and State Layer
    ↓
 API Layer
    ↓
-Backend (Supabase / TBD)
+Backend (Supabase)
    ↓
 Database (Postgres)
 
@@ -29,7 +29,11 @@ Database (Postgres)
 * Controls UI updates
 * Keeps logic out of UI
 
-(Provider / Riverpod / Bloc — TBD)
+Current approach:
+
+* Inherited scopes for dependency access
+* ChangeNotifier controllers for feature state
+* Repository interfaces for data access boundaries
 
 ---
 
@@ -51,6 +55,8 @@ Database (Postgres)
 * Jobs model currently follows backend keys: `job_name`, `po_number`, `site_id`
 * Supabase startup is guarded: missing or broken config no longer crashes app startup, but jobs screens now surface repository errors instead of serving mock data
 * Settings now exposes repository-driven connection testing and manual data refresh diagnostics
+* Auth state listener is wired in app startup, but login UI flow is still placeholder and splash still bypasses login
+* Write paths for jobs/notes/assignments/attachments are not fully implemented yet
 
 ---
 
@@ -108,3 +114,13 @@ Full current schema details live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
 * Complex permissions
 * Real-time updates
 * Fancy animations
+
+---
+
+## Pre-Testing Completion Priorities
+
+1. Replace auth placeholder with real session-based login and logout
+2. Complete core write flows (jobs, notes, assignments)
+3. Replace placeholder feature pages (notes, contacts) with repository-backed implementations
+4. Add attachment upload and retrieval
+5. Add regression tests for critical controller and repository logic

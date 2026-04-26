@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/config/app_environment.dart';
 import '../../core/supabase/supabase_bootstrap.dart';
 import '../../core/theme/theme_controller.dart';
+import '../../routes/app_router.dart';
 import '../jobs/controllers/jobs_controller.dart';
 import '../jobs/data/jobs_repository.dart';
 
@@ -16,6 +18,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   bool _isTestingConnection = false;
   bool _isRefreshingData = false;
+  bool _isSigningOut = false;
   RepositoryConnectionStatus? _lastConnectionStatus;
 
   @override
@@ -165,6 +168,33 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
         const SizedBox(height: 12),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Account',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 12),
+                FilledButton.icon(
+                  onPressed: _isSigningOut ? null : () => _logout(context),
+                  icon: _isSigningOut
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.logout),
+                  label: Text(_isSigningOut ? 'Signing out...' : 'Logout'),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
         const Card(
           child: Column(
             children: [
@@ -264,6 +294,58 @@ class _SettingsPageState extends State<SettingsPage> {
             : colorScheme.errorContainer,
       ),
     );
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    setState(() {
+      _isSigningOut = true;
+    });
+
+    try {
+      if (SupabaseBootstrap.state.isReady) {
+        await Supabase.instance.client.auth.signOut();
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        AppRouter.login,
+        (route) => false,
+      );
+    } on AuthException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Unable to sign out: ${error.message}'),
+          backgroundColor: colorScheme.errorContainer,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      messenger.showSnackBar(
+        SnackBar(
+          content: const Text('Unable to sign out right now. Please try again.'),
+          backgroundColor: colorScheme.errorContainer,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSigningOut = false;
+        });
+      }
+    }
   }
 }
 

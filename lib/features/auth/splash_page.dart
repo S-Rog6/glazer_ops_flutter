@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../core/supabase/supabase_bootstrap.dart';
 import '../../routes/app_router.dart';
 
-const bool kBypassLogin = true;
+// const bool kBypassLogin = true;
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -22,11 +24,29 @@ class _SplashPageState extends State<SplashPage> {
   void _navigateToHome() {
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
+        final nextRoute = _resolveNextRoute();
         Navigator.of(context).pushReplacementNamed(
-          kBypassLogin ? AppRouter.dashboard : AppRouter.login,
+          nextRoute,
         );
       }
     });
+  }
+
+  String _resolveNextRoute() {
+    try {
+      if (!SupabaseBootstrap.state.isReady) {
+        return AppRouter.login;
+      }
+
+      final session = Supabase.instance.client.auth.currentSession;
+      if (session != null) {
+        return AppRouter.dashboard;
+      }
+
+      return AppRouter.login;
+    } catch (_) {
+      return AppRouter.login;
+    }
   }
 
   @override
