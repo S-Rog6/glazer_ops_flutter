@@ -5,6 +5,8 @@ import '../../core/supabase/supabase_bootstrap.dart';
 import '../../core/theme/theme_controller.dart';
 import '../jobs/controllers/jobs_controller.dart';
 import '../jobs/data/jobs_repository.dart';
+import 'controllers/user_settings_controller.dart';
+import 'models/user_settings.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -24,6 +26,9 @@ class _SettingsPageState extends State<SettingsPage> {
     final jobsController = JobsControllerScope.of(context);
     final repository = JobsRepositoryScope.of(context);
     final bootstrapState = SupabaseBootstrap.state;
+    final settingsController = UserSettingsControllerScope.of(context);
+    final userSettings = settingsController.settings;
+    final activeUserId = jobsController.activeUserId;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -46,6 +51,120 @@ class _SettingsPageState extends State<SettingsPage> {
                   );
                 },
               ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const ListTile(title: Text('User Preferences')),
+              if (settingsController.isLoading)
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: LinearProgressIndicator(),
+                )
+              else ...[
+                ListTile(
+                  title: const Text('Card actions side'),
+                  subtitle: Text(
+                    userSettings.cardActionsSide == CardActionsSide.left
+                        ? 'Left'
+                        : 'Right',
+                  ),
+                  trailing: DropdownButton<CardActionsSide>(
+                    value: userSettings.cardActionsSide,
+                    onChanged: (value) {
+                      if (value == null) return;
+                      settingsController.saveSettings(
+                        activeUserId,
+                        userSettings.copyWith(cardActionsSide: value),
+                      );
+                    },
+                    items: CardActionsSide.values
+                        .map(
+                          (side) => DropdownMenuItem(
+                            value: side,
+                            child: Text(
+                              side == CardActionsSide.left ? 'Left' : 'Right',
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ),
+                ListTile(
+                  title: const Text('Schedule view'),
+                  subtitle: Text(_scheduleViewLabel(userSettings.scheduleView)),
+                  trailing: DropdownButton<ScheduleView>(
+                    value: userSettings.scheduleView,
+                    onChanged: (value) {
+                      if (value == null) return;
+                      settingsController.saveSettings(
+                        activeUserId,
+                        userSettings.copyWith(scheduleView: value),
+                      );
+                    },
+                    items: ScheduleView.values
+                        .map(
+                          (view) => DropdownMenuItem(
+                            value: view,
+                            child: Text(_scheduleViewLabel(view)),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ),
+                SwitchListTile.adaptive(
+                  title: const Text('Calculator enabled'),
+                  value: userSettings.calculatorEnabled,
+                  onChanged: (enabled) {
+                    settingsController.saveSettings(
+                      activeUserId,
+                      userSettings.copyWith(calculatorEnabled: enabled),
+                    );
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Zoom  (${userSettings.zoom.toStringAsFixed(2)}×)',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      Slider.adaptive(
+                        min: 0.50,
+                        max: 2.00,
+                        divisions: 30,
+                        value: userSettings.zoom,
+                        label: userSettings.zoom.toStringAsFixed(2),
+                        onChanged: (value) {
+                          settingsController.saveSettings(
+                            activeUserId,
+                            userSettings.copyWith(
+                              zoom: double.parse(value.toStringAsFixed(2)),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                if (settingsController.hasError)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: Text(
+                      settingsController.errorMessage!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+              ],
             ],
           ),
         ),
@@ -357,4 +476,15 @@ String _formatTimestamp(DateTime? value) {
   final minute = value.minute.toString().padLeft(2, '0');
   final meridiem = value.hour >= 12 ? 'PM' : 'AM';
   return '${value.year}-$month-$day $hour:$minute $meridiem';
+}
+
+String _scheduleViewLabel(ScheduleView view) {
+  switch (view) {
+    case ScheduleView.month:
+      return 'Month';
+    case ScheduleView.week:
+      return 'Week';
+    case ScheduleView.day:
+      return 'Day';
+  }
 }
