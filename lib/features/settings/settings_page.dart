@@ -19,6 +19,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _isTestingConnection = false;
   bool _isRefreshingData = false;
   RepositoryConnectionStatus? _lastConnectionStatus;
+  double? _pendingZoom;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +30,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final settingsController = UserSettingsControllerScope.of(context);
     final userSettings = settingsController.settings;
     final activeUserId = jobsController.activeUserId;
+    final displayZoom = _pendingZoom ?? userSettings.zoom;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -132,21 +134,30 @@ class _SettingsPageState extends State<SettingsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Zoom  (${userSettings.zoom.toStringAsFixed(2)}×)',
+                        'Zoom  (${displayZoom.toStringAsFixed(2)}×)',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       Slider.adaptive(
                         min: 0.50,
                         max: 2.00,
                         divisions: 30,
-                        value: userSettings.zoom,
-                        label: userSettings.zoom.toStringAsFixed(2),
+                        value: displayZoom,
+                        label: displayZoom.toStringAsFixed(2),
                         onChanged: (value) {
+                          setState(() {
+                            _pendingZoom = double.parse(
+                              value.toStringAsFixed(2),
+                            );
+                          });
+                        },
+                        onChangeEnd: (value) {
+                          final snapped = double.parse(
+                            value.toStringAsFixed(2),
+                          );
+                          setState(() => _pendingZoom = null);
                           settingsController.saveSettings(
                             activeUserId,
-                            userSettings.copyWith(
-                              zoom: double.parse(value.toStringAsFixed(2)),
-                            ),
+                            userSettings.copyWith(zoom: snapped),
                           );
                         },
                       ),
