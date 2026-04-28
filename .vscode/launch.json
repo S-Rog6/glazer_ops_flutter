@@ -7,19 +7,31 @@
         {
             "name": "Flutter",
             "request": "launch",
-            "type": "dart"
+                "type": "dart",
+                "args": [
+                    "--dart-define=SUPABASE_URL=https://kdglchjsogpinspiigyo.supabase.co",
+                    "--dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkZ2xjaGpzb2dwaW5zcGlpZ3lvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMDY4ODIsImV4cCI6MjA4OTU4Mjg4Mn0.sH24oQ68mhzsFlBCHGTZUghjD_XH8BEAx81kHCUeP1c"
+                ]
         },
         {
             "name": "Flutter (Chrome)",
             "request": "launch",
-            "type": "dart",
-            "deviceId": "chrome"
+                "type": "dart",
+                "deviceId": "chrome",
+                "args": [
+                    "--dart-define=SUPABASE_URL=https://kdglchjsogpinspiigyo.supabase.co",
+                    "--dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkZ2xjaGpzb2dwaW5zcGlpZ3lvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMDY4ODIsImV4cCI6MjA4OTU4Mjg4Mn0.sH24oQ68mhzsFlBCHGTZUghjD_XH8BEAx81kHCUeP1c"
+                ]
         },
         {
             "name": "Flutter (Windows)",
             "request": "launch",
-            "type": "dart",
-            "deviceId": "windows"
+                "type": "dart",
+                "deviceId": "windows",
+                "args": [
+                    "--dart-define=SUPABASE_URL=https://kdglchjsogpinspiigyo.supabase.co",
+                    "--dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkZ2xjaGpzb2dwaW5zcGlpZ3lvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMDY4ODIsImV4cCI6MjA4OTU4Mjg4Mn0.sH24oQ68mhzsFlBCHGTZUghjD_XH8BEAx81kHCUeP1c"
+                ]
         }
     ]
 }

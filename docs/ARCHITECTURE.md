@@ -58,6 +58,25 @@ Current approach:
 * Auth state listener is wired in app startup, but login UI flow is still placeholder and splash still bypasses login
 * Write paths for jobs/notes/assignments/attachments are not fully implemented yet
 
+### User Preferences / Settings Storage
+
+User preferences are persisted in the `user_settings` Supabase table (one row per user, keyed by `user_id`).
+
+The data layer follows the same Repository → Controller pattern used by jobs:
+
+| Layer | Class | Path |
+|---|---|---|
+| Model | `UserSettings` | `features/settings/models/user_settings.dart` |
+| Interface | `UserSettingsRepository` | `features/settings/data/user_settings_repository.dart` |
+| Live (Supabase) | `SupabaseUserSettingsRepository` | `features/settings/data/supabase_user_settings_repository.dart` |
+| Mock (no Supabase) | `MockUserSettingsRepository` | `features/settings/data/mock_user_settings_repository.dart` |
+| Fallback (unavailable) | `UnavailableUserSettingsRepository` | `features/settings/data/unavailable_user_settings_repository.dart` |
+| Controller | `UserSettingsController` | `features/settings/controllers/user_settings_controller.dart` |
+
+`GlazerOpsApp` (`app.dart`) selects the correct repository implementation at startup (same logic as jobs) and exposes both the repository and controller via `InheritedWidget` scopes (`UserSettingsRepositoryScope` / `UserSettingsControllerScope`).
+
+Settings are fetched on startup for the active user and re-fetched on auth state changes. Each preference change calls `UserSettingsController.saveSettings`, which upserts the row in Supabase (or is a no-op when Supabase is unavailable).
+
 ---
 
 ## Offline Strategy (Planned)

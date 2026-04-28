@@ -35,8 +35,10 @@ class AppEnvironment {
       supabaseProfileId.trim().isEmpty ? null : supabaseProfileId.trim();
 
   static String get supabaseHost {
+    if (supabaseUrl.isEmpty) return 'Not configured';
     final uri = Uri.tryParse(supabaseUrl);
-    return uri?.host ?? 'Not configured';
+    final host = uri?.host ?? '';
+    return host.isNotEmpty ? host : 'Not configured';
   }
 
   static String get maskedProfileId => maskProfileId(activeProfileId);
