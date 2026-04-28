@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/utils/retry.dart';
 import '../models/job.dart';
 import '../models/job_details_data.dart';
 import 'jobs_repository.dart';
@@ -18,11 +19,13 @@ class SupabaseJobsRepository implements JobsRepository {
   @override
   Future<JobsSnapshot> fetchJobs({String? activeUserId}) async {
     try {
-      final jobRows = _asRowList(
-        await _client
-            .from('jobs')
-            .select(
-              '''
+      return await withRetry(
+        () async {
+          final jobRows = _asRowList(
+            await _client
+                .from('jobs')
+                .select(
+                  '''
               id,
               job_name,
               po_number,
@@ -37,61 +40,65 @@ class SupabaseJobsRepository implements JobsRepository {
                 address_line_2
               )
               ''',
-            )
-            .order('created_at', ascending: false),
-      );
+                )
+                .order('created_at', ascending: false),
+          );
 
-      final jobIds = jobRows
-          .map((row) => row['id'] as String)
-          .toList(growable: false);
-      final siteIds = jobRows
-          .map((row) => row['site_id'] as String)
-          .toSet()
-          .toList(growable: false);
+          final jobIds = jobRows
+              .map((row) => row['id'] as String)
+              .toList(growable: false);
+          final siteIds = jobRows
+              .map((row) => row['site_id'] as String)
+              .toSet()
+              .toList(growable: false);
 
-      final primaryJobContactsFuture = _fetchPrimaryJobContacts(jobIds);
-      final primarySiteContactsFuture = _fetchPrimarySiteContacts(siteIds);
-      final pinnedJobIdsFuture = _fetchUserJobIds(
-        table: 'user_pinned_jobs',
-        activeUserId: activeUserId,
-      );
-      final assignedJobIdsFuture = _fetchUserJobIds(
-        table: 'job_assignments',
-        activeUserId: activeUserId,
-      );
+          final primaryJobContactsFuture = _fetchPrimaryJobContacts(jobIds);
+          final primarySiteContactsFuture = _fetchPrimarySiteContacts(siteIds);
+          final pinnedJobIdsFuture = _fetchUserJobIds(
+            table: 'user_pinned_jobs',
+            activeUserId: activeUserId,
+          );
+          final assignedJobIdsFuture = _fetchUserJobIds(
+            table: 'job_assignments',
+            activeUserId: activeUserId,
+          );
 
-      final primaryJobContacts = await primaryJobContactsFuture;
-      final primarySiteContacts = await primarySiteContactsFuture;
-      final pinnedJobIds = await pinnedJobIdsFuture;
-      final assignedJobIds = await assignedJobIdsFuture;
+          final primaryJobContacts = await primaryJobContactsFuture;
+          final primarySiteContacts = await primarySiteContactsFuture;
+          final pinnedJobIds = await pinnedJobIdsFuture;
+          final assignedJobIds = await assignedJobIdsFuture;
 
-      final jobs = jobRows.map((row) {
-        final site = _asRow(row['site']);
-        final jobId = row['id'] as String;
-        final siteId = row['site_id'] as String;
-        final contact = primaryJobContacts[jobId] ?? primarySiteContacts[siteId];
+          final jobs = jobRows.map((row) {
+            final site = _asRow(row['site']);
+            final jobId = row['id'] as String;
+            final siteId = row['site_id'] as String;
+            final contact =
+                primaryJobContacts[jobId] ?? primarySiteContacts[siteId];
 
-        return Job(
-          id: jobId,
-          jobName: _readRequiredString(row, 'job_name'),
-          poNumber: _readRequiredString(row, 'po_number'),
-          siteId: siteId,
-          siteName: _readString(site, 'name') ?? siteId,
-          status: _readRequiredString(row, 'status'),
-          createdAt: DateTime.parse(_readRequiredString(row, 'created_at')),
-          startDate: _parseDate(_readString(row, 'start_date')),
-          endDate: _parseDate(_readString(row, 'end_date')),
-          addressLine1: _readString(site, 'address_line_1'),
-          addressLine2: _readString(site, 'address_line_2'),
-          primaryContactName: contact?.name,
-          primaryContactPhone: contact?.phone,
-        );
-      }).toList(growable: false);
+            return Job(
+              id: jobId,
+              jobName: _readRequiredString(row, 'job_name'),
+              poNumber: _readRequiredString(row, 'po_number'),
+              siteId: siteId,
+              siteName: _readString(site, 'name') ?? siteId,
+              status: _readRequiredString(row, 'status'),
+              createdAt: DateTime.parse(_readRequiredString(row, 'created_at')),
+              startDate: _parseDate(_readString(row, 'start_date')),
+              endDate: _parseDate(_readString(row, 'end_date')),
+              addressLine1: _readString(site, 'address_line_1'),
+              addressLine2: _readString(site, 'address_line_2'),
+              primaryContactName: contact?.name,
+              primaryContactPhone: contact?.phone,
+            );
+          }).toList(growable: false);
 
-      return JobsSnapshot(
-        jobs: jobs,
-        pinnedJobIds: pinnedJobIds,
-        assignedJobIds: assignedJobIds,
+          return JobsSnapshot(
+            jobs: jobs,
+            pinnedJobIds: pinnedJobIds,
+            assignedJobIds: assignedJobIds,
+          );
+        },
+        retryIf: (error) => error is! PostgrestException,
       );
     } on PostgrestException catch (error) {
       throw RepositoryException(
@@ -110,10 +117,12 @@ class SupabaseJobsRepository implements JobsRepository {
   @override
   Future<JobDetailsData?> fetchJobDetails(String jobId) async {
     try {
-      final jobRow = await _client
-          .from('jobs')
-          .select(
-            '''
+      return await withRetry(
+        () async {
+          final jobRow = await _client
+              .from('jobs')
+              .select(
+                '''
             id,
             job_name,
             po_number,
@@ -130,50 +139,53 @@ class SupabaseJobsRepository implements JobsRepository {
               notes
             )
             ''',
-          )
-          .eq('id', jobId)
-          .maybeSingle();
+              )
+              .eq('id', jobId)
+              .maybeSingle();
 
-      if (jobRow == null) {
-        return null;
-      }
+          if (jobRow == null) {
+            return null;
+          }
 
-      final job = _asRow(jobRow);
-      final site = _asRow(job['site']);
-      final siteId = _readRequiredString(job, 'site_id');
-      final jobStatus = _readRequiredString(job, 'status');
+          final job = _asRow(jobRow);
+          final site = _asRow(job['site']);
+          final siteId = _readRequiredString(job, 'site_id');
+          final jobStatus = _readRequiredString(job, 'status');
 
-      final jobContactsFuture = _fetchJobContacts(jobId);
-      final siteContactsFuture = _fetchSiteContacts(siteId);
-      final assignmentsFuture = _fetchCrewAssignments(jobId, jobStatus);
-      final notesFuture = _fetchNotes(jobId);
+          final jobContactsFuture = _fetchJobContacts(jobId);
+          final siteContactsFuture = _fetchSiteContacts(siteId);
+          final assignmentsFuture = _fetchCrewAssignments(jobId, jobStatus);
+          final notesFuture = _fetchNotes(jobId);
 
-      final jobContacts = await jobContactsFuture;
-      final siteContacts = await siteContactsFuture;
-      final assignments = await assignmentsFuture;
-      final notes = await notesFuture;
+          final jobContacts = await jobContactsFuture;
+          final siteContacts = await siteContactsFuture;
+          final assignments = await assignmentsFuture;
+          final notes = await notesFuture;
 
-      return JobDetailsData(
-        id: _readRequiredString(job, 'id'),
-        jobName: _readRequiredString(job, 'job_name'),
-        poNumber: _readRequiredString(job, 'po_number'),
-        status: jobStatus,
-        startDate: _parseDate(_readString(job, 'start_date')),
-        endDate: _parseDate(_readString(job, 'end_date')),
-        description:
-            _readString(job, 'description') ?? 'No job description provided.',
-        siteId: siteId,
-        siteName: _readString(site, 'name') ?? siteId,
-        addressLine1:
-            _readString(site, 'address_line_1') ?? 'Address unavailable',
-        addressLine2: _readString(site, 'address_line_2'),
-        siteNotes: _readString(site, 'notes') ?? 'No site notes provided.',
-        contacts: <JobContactData>[
-          ...jobContacts,
-          ...siteContacts,
-        ],
-        crewAssignments: assignments,
-        notes: notes,
+          return JobDetailsData(
+            id: _readRequiredString(job, 'id'),
+            jobName: _readRequiredString(job, 'job_name'),
+            poNumber: _readRequiredString(job, 'po_number'),
+            status: jobStatus,
+            startDate: _parseDate(_readString(job, 'start_date')),
+            endDate: _parseDate(_readString(job, 'end_date')),
+            description:
+                _readString(job, 'description') ?? 'No job description provided.',
+            siteId: siteId,
+            siteName: _readString(site, 'name') ?? siteId,
+            addressLine1:
+                _readString(site, 'address_line_1') ?? 'Address unavailable',
+            addressLine2: _readString(site, 'address_line_2'),
+            siteNotes: _readString(site, 'notes') ?? 'No site notes provided.',
+            contacts: <JobContactData>[
+              ...jobContacts,
+              ...siteContacts,
+            ],
+            crewAssignments: assignments,
+            notes: notes,
+          );
+        },
+        retryIf: (error) => error is! PostgrestException,
       );
     } on PostgrestException catch (error) {
       throw RepositoryException(
