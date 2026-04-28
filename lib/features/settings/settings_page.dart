@@ -145,15 +145,11 @@ class _SettingsPageState extends State<SettingsPage> {
                         label: displayZoom.toStringAsFixed(2),
                         onChanged: (value) {
                           setState(() {
-                            _pendingZoom = double.parse(
-                              value.toStringAsFixed(2),
-                            );
+                            _pendingZoom = (value * 100).round() / 100;
                           });
                         },
                         onChangeEnd: (value) {
-                          final snapped = double.parse(
-                            value.toStringAsFixed(2),
-                          );
+                          final snapped = (value * 100).round() / 100;
                           setState(() => _pendingZoom = null);
                           settingsController.saveSettings(
                             activeUserId,
