@@ -67,6 +67,26 @@ class AppDrawer extends StatelessWidget {
               onTap: () => onDestinationSelected(destination.route),
             ),
           ),
+          if (AppRouter.adminDestinations.isNotEmpty) ...[
+            const Divider(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+              child: Text(
+                'Admin',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            ...AppRouter.adminDestinations.map(
+              (destination) => ListTile(
+                selected: currentRoute == destination.route,
+                leading: Icon(destination.icon),
+                title: Text(destination.label),
+                onTap: () => onDestinationSelected(destination.route),
+              ),
+            ),
+          ],
         ],
       ),
     );
