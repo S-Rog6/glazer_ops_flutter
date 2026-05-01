@@ -103,6 +103,7 @@ notes
 
 profiles
 - `id`
+- `email`
 - `full_name`
 - `phone`
 - `avatar_url`

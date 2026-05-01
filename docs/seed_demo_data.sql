@@ -233,28 +233,32 @@ VALUES
 --   Chris Paulson | chris.paulson@example.com   | 312-555-1003
 --   Tony Markov   | tony.markov@example.com     | 312-555-1004
 -- ---------------------------------------------------------------
-INSERT INTO public.profiles (id, full_name, phone, is_active)
+INSERT INTO public.profiles (id, email, full_name, phone, is_active)
 VALUES
   (
     'e1000000-0000-0000-0000-000000000001',
+    'scott.rogers@example.com',
     'Scott Rogers',
     '813-317-9705',
     true
   ),
   (
     'e1000000-0000-0000-0000-000000000002',
+    'mike.deluca@example.com',
     'Mike Deluca',
     '312-555-1002',
     true
   ),
   (
     'e1000000-0000-0000-0000-000000000003',
+    'chris.paulson@example.com',
     'Chris Paulson',
     '312-555-1003',
     true
   ),
   (
     'e1000000-0000-0000-0000-000000000004',
+    'tony.markov@example.com',
     'Tony Markov',
     '312-555-1004',
     true
