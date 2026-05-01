@@ -121,6 +121,30 @@ class _SettingsPageState extends State<SettingsPage> {
                         .toList(),
                   ),
                 ),
+                ListTile(
+                  title: const Text('Default jobs view'),
+                  subtitle: Text(
+                    _defaultJobsViewLabel(userSettings.defaultJobsView),
+                  ),
+                  trailing: DropdownButton<DefaultJobsView>(
+                    value: userSettings.defaultJobsView,
+                    onChanged: (value) {
+                      if (value == null) return;
+                      settingsController.saveSettings(
+                        activeUserId,
+                        userSettings.copyWith(defaultJobsView: value),
+                      );
+                    },
+                    items: DefaultJobsView.values
+                        .map(
+                          (view) => DropdownMenuItem(
+                            value: view,
+                            child: Text(_defaultJobsViewLabel(view)),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ),
                 SwitchListTile.adaptive(
                   title: const Text('Calculator enabled'),
                   value: userSettings.calculatorEnabled,
@@ -575,5 +599,16 @@ String _scheduleViewLabel(ScheduleView view) {
       return 'Week';
     case ScheduleView.day:
       return 'Day';
+  }
+}
+
+String _defaultJobsViewLabel(DefaultJobsView view) {
+  switch (view) {
+    case DefaultJobsView.card:
+      return 'Card';
+    case DefaultJobsView.list:
+      return 'List';
+    case DefaultJobsView.table:
+      return 'Table';
   }
 }

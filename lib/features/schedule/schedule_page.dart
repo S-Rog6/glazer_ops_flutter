@@ -4,6 +4,7 @@ import '../../routes/app_router.dart';
 import '../jobs/controllers/jobs_controller.dart';
 import '../jobs/models/job.dart';
 import '../jobs/widgets/card_display_area.dart';
+import '../settings/controllers/user_settings_controller.dart';
 
 DateTime _dateOnly(DateTime value) =>
     DateTime(value.year, value.month, value.day);
@@ -136,6 +137,7 @@ class _SchedulePageState extends State<SchedulePage>
     }
 
     final jobs = jobsController.allJobs;
+    final userSettings = UserSettingsControllerScope.of(context).settings;
     final theme = Theme.of(context);
 
     return Column(
@@ -192,6 +194,7 @@ class _SchedulePageState extends State<SchedulePage>
                   isJobForActiveUser: jobsController.hasActiveUserContext
                       ? jobsController.isJobActiveForUser
                       : null,
+                  defaultJobsView: userSettings.defaultJobsView.value,
                   selectedDay: _selectedDay,
                   onChangeDay: _changeSelectedDay,
                 );
@@ -735,6 +738,7 @@ class _DayCalendarView extends StatefulWidget {
     required this.pinnedJobIds,
     required this.showActiveUserToggle,
     required this.isJobForActiveUser,
+    required this.defaultJobsView,
     required this.selectedDay,
     required this.onChangeDay,
   });
@@ -743,6 +747,7 @@ class _DayCalendarView extends StatefulWidget {
   final Set<String> pinnedJobIds;
   final bool showActiveUserToggle;
   final bool Function(Job job)? isJobForActiveUser;
+  final String defaultJobsView;
   final DateTime selectedDay;
   final ValueChanged<int> onChangeDay;
 
@@ -763,6 +768,7 @@ class _DayCalendarViewState extends State<_DayCalendarView> {
       child: CardDisplayArea(
         title: _titleForDay(widget.selectedDay),
         jobs: jobs,
+        initialView: widget.defaultJobsView,
         pinnedJobIds: widget.pinnedJobIds,
         showActiveUserToggle: widget.showActiveUserToggle,
         isJobForActiveUser: widget.isJobForActiveUser,

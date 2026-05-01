@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_sizes.dart';
+import '../../../routes/app_router.dart';
 import '../models/job.dart';
 import 'job_card.dart';
+
+enum _JobDisplayView { card, list, table }
 
 class CardDisplayArea extends StatefulWidget {
   final String title;
@@ -12,6 +15,7 @@ class CardDisplayArea extends StatefulWidget {
   final bool showActiveUserToggle;
   final bool Function(Job job)? isJobForActiveUser;
   final String activeUserToggleLabel;
+  final String initialView;
 
   /// Shows at most this many cards before displaying a
   /// "View More / View Less" toggle button.
@@ -28,11 +32,16 @@ class CardDisplayArea extends StatefulWidget {
     this.showActiveUserToggle = false,
     this.isJobForActiveUser,
     this.activeUserToggleLabel = 'My jobs only',
+    this.initialView = 'card',
     this.maxVisibleItems = 4,
   }) : assert(
          maxVisibleItems == null ||
              (maxVisibleItems >= 1 && maxVisibleItems <= 20),
          'maxVisibleItems must be between 1 and 20',
+       ),
+       assert(
+         initialView == 'card' || initialView == 'list' || initialView == 'table',
+         'initialView must be card, list, or table',
        );
 
   @override
@@ -44,8 +53,15 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
 
   final TextEditingController _searchController = TextEditingController();
   String _selectedStatus = _allStatuses;
+  late _JobDisplayView _selectedView;
   bool _showActiveUserOnly = false;
   bool _isExpanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedView = _parseDisplayView(widget.initialView);
+  }
 
   @override
   void dispose() {
@@ -67,6 +83,10 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
     if (!widget.showActiveUserToggle || widget.isJobForActiveUser == null) {
       _showActiveUserOnly = false;
     }
+
+    if (oldWidget.initialView != widget.initialView) {
+      _selectedView = _parseDisplayView(widget.initialView);
+    }
   }
 
   @override
@@ -87,6 +107,7 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
             ? 250.0
             : (isMobile ? 320.0 : 340.0);
         final statusFieldWidth = compactPhone ? 150.0 : 170.0;
+        final viewFieldWidth = compactPhone ? 130.0 : 150.0;
         final panelSurface = colorScheme.surface;
         final filterSurface = colorScheme.surfaceContainerHighest;
 
@@ -192,6 +213,42 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
                               .toList(),
                         ),
                       ),
+                      SizedBox(
+                        width: viewFieldWidth,
+                        child: DropdownButtonFormField<_JobDisplayView>(
+                          initialValue: _selectedView,
+                          decoration: InputDecoration(
+                            labelText: 'View',
+                            filled: true,
+                            fillColor: filterSurface,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                          ),
+                          onChanged: (value) {
+                            if (value == null) {
+                              return;
+                            }
+
+                            setState(() => _selectedView = value);
+                          },
+                          items: const [
+                            DropdownMenuItem(
+                              value: _JobDisplayView.card,
+                              child: Text('Card'),
+                            ),
+                            DropdownMenuItem(
+                              value: _JobDisplayView.list,
+                              child: Text('List'),
+                            ),
+                            DropdownMenuItem(
+                              value: _JobDisplayView.table,
+                              child: Text('Table'),
+                            ),
+                          ],
+                        ),
+                      ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6),
                         child: Text(
@@ -224,11 +281,10 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
                       ),
                     )
                   else
-                    ...visibleJobs.map(
-                      (job) => JobCard(
-                        job: job,
-                        isPinned: widget.pinnedJobIds.contains(job.id),
-                      ),
+                    _buildViewContent(
+                      context,
+                      visibleJobs,
+                      isMobile: isMobile,
                     ),
                   if (hasMore)
                     Align(
@@ -292,5 +348,188 @@ class _CardDisplayAreaState extends State<CardDisplayArea> {
         job.poNumber.toLowerCase().contains(query) ||
         job.siteName.toLowerCase().contains(query) ||
         job.siteId.toLowerCase().contains(query);
+  }
+
+  Widget _buildViewContent(
+    BuildContext context,
+    List<Job> jobs, {
+    required bool isMobile,
+  }) {
+    switch (_selectedView) {
+      case _JobDisplayView.card:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: jobs
+              .map(
+                (job) => JobCard(
+                  job: job,
+                  isPinned: widget.pinnedJobIds.contains(job.id),
+                ),
+              )
+              .toList(),
+        );
+      case _JobDisplayView.list:
+        return _buildListView(context, jobs);
+      case _JobDisplayView.table:
+        return _buildTableView(context, jobs, isMobile: isMobile);
+    }
+  }
+
+  Widget _buildListView(BuildContext context, List<Job> jobs) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: jobs
+          .map(
+            (job) => Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: ListTile(
+                onTap: () => _openJob(context, job),
+                leading: Icon(
+                  Icons.work_outline,
+                  color: theme.colorScheme.primary,
+                ),
+                title: Text(
+                  job.jobName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text(
+                  '${job.poNumber} • ${job.siteName}\n${job.status}',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                isThreeLine: true,
+                trailing: widget.pinnedJobIds.contains(job.id)
+                    ? Icon(
+                        Icons.push_pin,
+                        color: theme.colorScheme.primary,
+                      )
+                    : null,
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  Widget _buildTableView(
+    BuildContext context,
+    List<Job> jobs, {
+    required bool isMobile,
+  }) {
+    final theme = Theme.of(context);
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minWidth: isMobile ? 760 : 980),
+        child: DataTable(
+          columns: const [
+            DataColumn(label: Text('Job')),
+            DataColumn(label: Text('PO')),
+            DataColumn(label: Text('Site')),
+            DataColumn(label: Text('Status')),
+            DataColumn(label: Text('Dates')),
+          ],
+          rows: jobs
+              .map(
+                (job) => DataRow(
+                  onSelectChanged: (_) => _openJob(context, job),
+                  cells: [
+                    DataCell(
+                      Row(
+                        children: [
+                          if (widget.pinnedJobIds.contains(job.id))
+                            Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: Icon(
+                                Icons.push_pin,
+                                size: 16,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                          Expanded(
+                            child: Text(
+                              job.jobName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    DataCell(Text(job.poNumber)),
+                    DataCell(
+                      Text(
+                        job.siteName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    DataCell(Text(job.status)),
+                    DataCell(Text(_formatDateRange(job))),
+                  ],
+                ),
+              )
+              .toList(),
+        ),
+      ),
+    );
+  }
+
+  void _openJob(BuildContext context, Job job) {
+    Navigator.of(context).pushNamed(AppRouter.jobDetails, arguments: job.id);
+  }
+
+  String _formatDateRange(Job job) {
+    final start = job.startDate;
+    final end = job.endDate;
+
+    if (start == null && end == null) {
+      return _formatDate(job.createdAt);
+    }
+
+    if (start != null && end != null) {
+      return '${_formatDate(start)} - ${_formatDate(end)}';
+    }
+
+    if (start != null) {
+      return 'Starts ${_formatDate(start)}';
+    }
+
+    return 'Ends ${_formatDate(end!)}';
+  }
+
+  String _formatDate(DateTime date) {
+    const months = <String>[
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  }
+
+  _JobDisplayView _parseDisplayView(String value) {
+    switch (value) {
+      case 'list':
+        return _JobDisplayView.list;
+      case 'table':
+        return _JobDisplayView.table;
+      case 'card':
+      default:
+        return _JobDisplayView.card;
+    }
   }
 }

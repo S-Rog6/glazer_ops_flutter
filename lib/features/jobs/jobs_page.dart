@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../settings/controllers/user_settings_controller.dart';
 import 'controllers/jobs_controller.dart';
 import 'widgets/card_display_area.dart';
 
@@ -9,6 +10,7 @@ class JobsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final jobsController = JobsControllerScope.of(context);
+    final userSettings = UserSettingsControllerScope.of(context).settings;
 
     if (jobsController.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -40,6 +42,7 @@ class JobsPage extends StatelessWidget {
       child: CardDisplayArea(
         title: 'Job Display Area',
         jobs: jobsController.allJobs,
+        initialView: userSettings.defaultJobsView.value,
         pinnedJobIds: jobsController.pinnedJobIds,
         showActiveUserToggle: jobsController.hasActiveUserContext,
         isJobForActiveUser: jobsController.hasActiveUserContext
