@@ -16,7 +16,7 @@ class SupabaseProfilesRepository implements ProfilesRepository {
     try {
       final rows = await _client
           .from('profiles')
-          .select('id, email, full_name, phone, avatar_url, is_active, created_at, updated_at')
+          .select()
           .order('full_name');
       return (rows as List<dynamic>)
           .map((row) => UserProfile.fromJson(Map<String, dynamic>.from(row as Map)))

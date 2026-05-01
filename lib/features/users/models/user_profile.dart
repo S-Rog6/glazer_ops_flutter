@@ -51,21 +51,25 @@ class UserProfile {
     String? id,
     String? email,
     String? fullName,
-    String? phone,
-    String? avatarUrl,
+    Object? phone = _sentinel,
+    Object? avatarUrl = _sentinel,
     bool? isActive,
-    DateTime? createdAt,
-    DateTime? updatedAt,
+    Object? createdAt = _sentinel,
+    Object? updatedAt = _sentinel,
   }) {
     return UserProfile(
       id: id ?? this.id,
       email: email ?? this.email,
       fullName: fullName ?? this.fullName,
-      phone: phone ?? this.phone,
-      avatarUrl: avatarUrl ?? this.avatarUrl,
+      phone: phone == _sentinel ? this.phone : phone as String?,
+      avatarUrl: avatarUrl == _sentinel ? this.avatarUrl : avatarUrl as String?,
       isActive: isActive ?? this.isActive,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
+      createdAt:
+          createdAt == _sentinel ? this.createdAt : createdAt as DateTime?,
+      updatedAt:
+          updatedAt == _sentinel ? this.updatedAt : updatedAt as DateTime?,
     );
   }
 }
+
+const Object _sentinel = Object();

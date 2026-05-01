@@ -232,7 +232,7 @@ class _ProfileTile extends StatelessWidget {
   }
 
   String _initials(String name) {
-    final parts = name.trim().split(RegExp(r'\s+'));
+    final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
     if (parts.isEmpty) return '?';
     if (parts.length == 1) return parts[0][0].toUpperCase();
     return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
@@ -337,6 +337,12 @@ class _ProfileFormDialogState extends State<_ProfileFormDialog> {
                     return 'Email is required';
                   }
                   if (!value.contains('@')) {
+                    return 'Enter a valid email address';
+                  }
+                  final emailRegex = RegExp(
+                    r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                  );
+                  if (!emailRegex.hasMatch(value.trim())) {
                     return 'Enter a valid email address';
                   }
                   return null;
