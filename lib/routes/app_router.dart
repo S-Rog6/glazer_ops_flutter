@@ -10,6 +10,7 @@ import '../features/schedule/schedule_page.dart';
 import '../features/contacts/contacts_page.dart';
 import '../features/notes/notes_page.dart';
 import '../features/settings/settings_page.dart';
+import '../features/users/users_page.dart';
 import '../features/auth/login_page.dart';
 import '../features/auth/splash_page.dart';
 
@@ -35,6 +36,7 @@ class AppRouter {
   static const String contacts = '/contacts';
   static const String notes = '/notes';
   static const String settings = '/settings';
+  static const String users = '/users';
 
   static const List<AppDestination> primaryDestinations = [
     AppDestination(
@@ -64,8 +66,17 @@ class AppRouter {
     ),
   ];
 
+  static const List<AppDestination> adminDestinations = [
+    AppDestination(
+      route: users,
+      label: 'Users',
+      icon: Icons.manage_accounts,
+    ),
+  ];
+
   static const List<AppDestination> drawerDestinations = [
     ...primaryDestinations,
+    ...adminDestinations,
   ];
 
   static bool isShellRoute(String? routeName) {
@@ -161,6 +172,14 @@ class AppRouter {
           routeBuilder: (_) => const AppShell(
             currentRoute: settings,
             body: SettingsPage(),
+          ),
+        );
+      case users:
+        return _requireAuthRoute(
+          settings: routeSettings,
+          routeBuilder: (_) => const AppShell(
+            currentRoute: users,
+            body: UsersPage(),
           ),
         );
       default:

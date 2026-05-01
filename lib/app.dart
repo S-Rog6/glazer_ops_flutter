@@ -17,6 +17,11 @@ import 'features/settings/data/mock_user_settings_repository.dart';
 import 'features/settings/data/supabase_user_settings_repository.dart';
 import 'features/settings/data/unavailable_user_settings_repository.dart';
 import 'features/settings/data/user_settings_repository.dart';
+import 'features/users/controllers/profiles_controller.dart';
+import 'features/users/data/mock_profiles_repository.dart';
+import 'features/users/data/profiles_repository.dart';
+import 'features/users/data/supabase_profiles_repository.dart';
+import 'features/users/data/unavailable_profiles_repository.dart';
 import 'routes/app_router.dart';
 
 class GlazerOpsApp extends StatefulWidget {
@@ -32,6 +37,8 @@ class _GlazerOpsAppState extends State<GlazerOpsApp> {
   late final JobsController _jobsController;
   late final UserSettingsRepository _userSettingsRepository;
   late final UserSettingsController _userSettingsController;
+  late final ProfilesRepository _profilesRepository;
+  late final ProfilesController _profilesController;
   StreamSubscription<AuthState>? _authSubscription;
 
   @override
@@ -52,6 +59,12 @@ class _GlazerOpsAppState extends State<GlazerOpsApp> {
         ? const UnavailableUserSettingsRepository()
         : MockUserSettingsRepository();
 
+    _profilesRepository = bootstrapState.isReady
+        ? SupabaseProfilesRepository(Supabase.instance.client)
+        : bootstrapState.isConfigured
+        ? const UnavailableProfilesRepository()
+        : MockProfilesRepository();
+
     _jobsController = JobsController(
       repository: _jobsRepository,
       activeUserId: _resolveActiveUserId(),
@@ -59,9 +72,13 @@ class _GlazerOpsAppState extends State<GlazerOpsApp> {
     _userSettingsController = UserSettingsController(
       repository: _userSettingsRepository,
     );
+    _profilesController = ProfilesController(
+      repository: _profilesRepository,
+    );
 
     unawaited(_jobsController.fetchJobs());
     unawaited(_userSettingsController.fetchSettings(_resolveActiveUserId()));
+    unawaited(_profilesController.fetchProfiles());
 
     if (SupabaseBootstrap.state.isReady) {
       _authSubscription = Supabase.instance.client.auth.onAuthStateChange
@@ -106,6 +123,7 @@ class _GlazerOpsAppState extends State<GlazerOpsApp> {
     _authSubscription?.cancel();
     _jobsController.dispose();
     _userSettingsController.dispose();
+    _profilesController.dispose();
     _themeController.dispose();
     super.dispose();
   }
@@ -122,19 +140,25 @@ class _GlazerOpsAppState extends State<GlazerOpsApp> {
             repository: _userSettingsRepository,
             child: UserSettingsControllerScope(
               controller: _userSettingsController,
-              child: AnimatedBuilder(
-                animation: _themeController,
-                builder: (context, _) {
-                  return MaterialApp(
-                    title: 'GlazerOps',
-                    theme: AppTheme.lightTheme,
-                    darkTheme: AppTheme.darkTheme,
-                    themeMode: _themeController.themeMode,
-                    debugShowCheckedModeBanner: false,
-                    initialRoute: AppRouter.splash,
-                    onGenerateRoute: AppRouter.generateRoute,
-                  );
-                },
+              child: ProfilesRepositoryScope(
+                repository: _profilesRepository,
+                child: ProfilesControllerScope(
+                  controller: _profilesController,
+                  child: AnimatedBuilder(
+                    animation: _themeController,
+                    builder: (context, _) {
+                      return MaterialApp(
+                        title: 'GlazerOps',
+                        theme: AppTheme.lightTheme,
+                        darkTheme: AppTheme.darkTheme,
+                        themeMode: _themeController.themeMode,
+                        debugShowCheckedModeBanner: false,
+                        initialRoute: AppRouter.splash,
+                        onGenerateRoute: AppRouter.generateRoute,
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
           ),
